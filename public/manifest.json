@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "SeniorWeb",
+  "version": "0.0.1",
+  "description": "Browse the internet without fear. Simple interface, big buttons, no surprises.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "downloads",
+    "declarativeNetRequest",
+    "scripting",
+    "webNavigation",
+    "sidePanel"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "chrome_url_overrides": {
+    "newtab": "newtab/index.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/index.js"],
+      "css": ["content/panel.css"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "action": {
+    "default_title": "SeniorWeb — open panel"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      },
+      "description": "Open / close the SeniorWeb panel"
+    }
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ad_block_rules",
+        "enabled": false,
+        "path": "rules/ad-rules.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "warn.html", "newtab/index.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

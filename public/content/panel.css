@@ -1,0 +1,3 @@
+/* Side panel host element styles — injected into the main page DOM via manifest.
+ * Real styles arrive in P-01 / P-02 (Shadow DOM mount + fixed-column layout).
+ * Empty for now so the manifest reference resolves cleanly. */

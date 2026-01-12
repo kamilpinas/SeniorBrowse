@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warning — SeniorWeb</title>
+  <style>
+    :root {
+      --bg:      #f7f1e6;
+      --surface: #faf6ee;
+      --edge:    #ddd4be;
+      --text:    #2a2620;
+      --muted:   #6b6354;
+      --accent:  #c25e2a;
+      --radius:  14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 18px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--edge);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 2px 20px rgba(42,38,32,0.1);
+    }
+
+    .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .url-box {
+      background: var(--bg);
+      border: 1.5px solid var(--edge);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 1rem;
+      color: var(--muted);
+      word-break: break-all;
+      margin-bottom: 1.75rem;
+      text-align: left;
+    }
+
+    .reason {
+      display: inline-block;
+      background: #fef3cd;
+      color: #92650a;
+      border-radius: 6px;
+      padding: 0.2rem 0.7rem;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    #back-btn {
+      background: var(--accent);
+      color: #fff;
+    }
+    #back-btn:hover { background: #a04a1c; }
+
+    #proceed-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--edge);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    #proceed-btn:hover {
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    #proceed-btn[disabled] {
+      opacity: 0.45;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="icon">⚠️</span>
+    <h1>This page may not be safe</h1>
+    <p>SeniorWeb detected a potential warning for this website.</p>
+    <div class="reason">Warning</div>
+    <div class="url-box" id="url-display"></div>
+    <p>We recommend going back. If you know this site is safe, you can continue anyway.</p>
+
+    <div class="actions">
+      <button id="back-btn">← Go back (recommended)</button>
+      <button id="proceed-btn">I understand the risk — continue anyway</button>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search)
+    const url = params.get('url') || ''
+
+    document.getElementById('url-display').textContent = url || '(unknown page)'
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+      if (history.length > 1) history.back()
+      else window.close()
+    })
+
+    document.getElementById('proceed-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('proceed-btn')
+      btn.disabled = true
+      btn.textContent = 'Opening…'
+
+      try {
+        await chrome.runtime.sendMessage({ type: 'BYPASS_URL', payload: { url } })
+      } catch {
+        // Service worker may already know; proceed regardless.
+      }
+
+      location.href = url
+    })
+  </script>
+</body>
+</html>
