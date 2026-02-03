@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SeniorWeb</title>
+
+    <!-- Outfit: geometric, highly legible at all sizes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        color-scheme: light;
+
+        /* ── Palette ──────────────────────────────────────────── */
+        --color-bg:               #f5ede0;
+        --color-surface:          #fdf9f4;
+        --color-surface-raised:   #ffffff;
+        --color-surface-edge:     #e5d8c5;
+        --color-surface-edge-mid: #d4c4ae;
+
+        --color-text:             #1c1814;
+        --color-text-muted:       #7a6555;
+        --color-text-subtle:      #b09880;
+
+        --color-accent:           #c25e2a;
+        --color-accent-strong:    #a04a1c;
+        --color-accent-light:     #f5e4d4;
+        --color-accent-xlight:    #fdf0e8;
+
+        --color-success:          #2a7d5a;
+        --color-success-light:    #e0f5ec;
+
+        --color-danger:           #c62828;
+        --color-danger-light:     #fce4ec;
+
+        /* ── Typography ───────────────────────────────────────── */
+        --font-body: 'Outfit', ui-sans-serif, system-ui, -apple-system,
+          'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+        /* ── Geometry ─────────────────────────────────────────── */
+        --radius-sm:   8px;
+        --radius-md:   16px;
+        --radius-lg:   24px;
+        --radius-xl:   32px;
+        --radius-pill: 9999px;
+
+        /* ── Elevation system ─────────────────────────────────── */
+        --shadow-xs: 0 1px 3px rgba(28, 24, 20, 0.06);
+        --shadow-sm: 0 2px 8px  rgba(28, 24, 20, 0.08),
+                     0 1px 2px  rgba(28, 24, 20, 0.04);
+        --shadow-md: 0 4px 20px rgba(28, 24, 20, 0.10),
+                     0 2px 6px  rgba(28, 24, 20, 0.06);
+        --shadow-lg: 0 12px 40px rgba(28, 24, 20, 0.13),
+                     0 4px  12px rgba(28, 24, 20, 0.07);
+        --shadow-xl: 0 24px 64px rgba(28, 24, 20, 0.16),
+                     0 8px  24px rgba(28, 24, 20, 0.09);
+
+        /* backward-compat alias */
+        --shadow-soft: var(--shadow-sm);
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        font-size: 18px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body {
+        min-height: 100vh;
+        /* Warm radial glow from the top-center */
+        background-image:
+          radial-gradient(
+            ellipse 130% 70% at 50% -8%,
+            rgba(230, 140, 70, 0.18) 0%,
+            transparent 65%
+          );
+      }
+
+      /* Subtle grain texture — pure CSS, no external image */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.032;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      #root { min-height: 100vh; }
+
+      /* ── Motion system ──────────────────────────────────────── */
+
+      @keyframes sw-fade-up {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes sw-scale-in {
+        from { opacity: 0; transform: scale(0.94) translateY(12px); }
+        to   { opacity: 1; transform: scale(1)    translateY(0); }
+      }
+
+      @keyframes sw-modal-in {
+        from { opacity: 0; transform: scale(0.96) translateY(20px); }
+        to   { opacity: 1; transform: scale(1)    translateY(0); }
+      }
+
+      @keyframes sw-shake {
+        0%,  100% { transform: translateX(0); }
+        20%, 60%  { transform: translateX(-10px); }
+        40%, 80%  { transform: translateX(10px); }
+      }
+
+      @keyframes sw-dot-fill {
+        from { transform: scale(0.4); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+      }
+
+      @keyframes sw-toast-in {
+        from { opacity: 0; transform: scale(0.82); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes sw-toast-out {
+        from { opacity: 1; transform: scale(1); }
+        to   { opacity: 0; transform: scale(0.88); }
+      }
+
+      /* Panel-tour scrim — big arrow bouncing toward the side panel */
+      @keyframes sw-panel-arrow-r {
+        0%, 100% { transform: translateY(-50%) translateX(0px);   opacity: 0.75; }
+        50%      { transform: translateY(-50%) translateX(22px);  opacity: 1;    }
+      }
+      @keyframes sw-panel-arrow-l {
+        0%, 100% { transform: translateY(-50%) translateX(0px);   opacity: 0.75; }
+        50%      { transform: translateY(-50%) translateX(-22px); opacity: 1;    }
+      }
+      .sw-panel-arrow-r {
+        animation: sw-panel-arrow-r 0.85s cubic-bezier(.45,0,.55,1) infinite;
+      }
+      .sw-panel-arrow-l {
+        animation: sw-panel-arrow-l 0.85s cubic-bezier(.45,0,.55,1) infinite;
+      }
+
+      .sw-fade-up   { animation: sw-fade-up   0.5s cubic-bezier(.22,.68,0,1.2) both; }
+      .sw-scale-in  { animation: sw-scale-in  0.45s cubic-bezier(.22,.68,0,1.2) both; }
+      .sw-modal-in  { animation: sw-modal-in  0.38s cubic-bezier(.22,.68,0,1.2) both; }
+      .sw-shake     { animation: sw-shake     0.42s ease; }
+
+      .sw-stagger-1 { animation-delay: 0.06s; }
+      .sw-stagger-2 { animation-delay: 0.12s; }
+      .sw-stagger-3 { animation-delay: 0.18s; }
+      .sw-stagger-4 { animation-delay: 0.24s; }
+
+      /* ── Focus ring (replaces outline hacks everywhere) ─────── */
+      :focus-visible {
+        outline: 2.5px solid var(--color-accent);
+        outline-offset: 3px;
+      }
+
+      /* ── Scrollbar ──────────────────────────────────────────── */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-surface-edge);
+        border-radius: var(--radius-pill);
+      }
+      ::-webkit-scrollbar-thumb:hover { background: var(--color-surface-edge-mid); }
+
+      /* ── Dark theme ────────────────────────────────────────── */
+
+      :root.dark {
+        --color-bg:               #161210;
+        --color-surface:          #1e1a15;
+        --color-surface-raised:   #27221c;
+        --color-surface-edge:     #362e25;
+        --color-surface-edge-mid: #48402f;
+
+        --color-text:             #f0ebe2;
+        --color-text-muted:       #c0a88e;
+        --color-text-subtle:      #8a7060;
+
+        --color-accent:           #e07d42;
+        --color-accent-strong:    #c4652a;
+        --color-accent-light:     #3c2215;
+        --color-accent-xlight:    #2a180d;
+
+        --color-success:          #3aaa72;
+        --color-success-light:    #193424;
+
+        --color-danger:           #f07070;
+        --color-danger-light:     #3a0e0e;
+
+        --shadow-xs: 0 1px 3px  rgba(0,0,0,0.40);
+        --shadow-sm: 0 2px 8px  rgba(0,0,0,0.48), 0 1px 2px rgba(0,0,0,0.28);
+        --shadow-md: 0 4px 20px rgba(0,0,0,0.52), 0 2px 6px rgba(0,0,0,0.32);
+        --shadow-lg: 0 12px 40px rgba(0,0,0,0.58), 0 4px 12px rgba(0,0,0,0.36);
+        --shadow-xl: 0 24px 64px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.42);
+      }
+
+      /* Dim the warm radial glow in dark mode */
+      :root.dark body {
+        background-image: radial-gradient(
+          ellipse 130% 70% at 50% -8%,
+          rgba(180, 75, 25, 0.10) 0%,
+          transparent 65%
+        );
+      }
+
+      /* Slightly more visible grain on dark backgrounds */
+      :root.dark body::after { opacity: 0.055; }
+
+      /* ── Chrome NTP attribution suppression ────────────────── */
+      ntp-attribution,
+      #ntp-attribution,
+      customize-chrome-side-panel-button,
+      #customize-chrome-side-panel-button,
+      ntp-app {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Remove Chrome-injected NTP attribution elements. MV3 CSP forbids inline scripts. -->
+    <script src="/newtab-ntp-cleanup.js"></script>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
