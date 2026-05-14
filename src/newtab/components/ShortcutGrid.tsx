@@ -12,7 +12,9 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   NewspaperIcon,
+  PencilSimpleIcon,
   PlayIcon,
+  PlusIcon,
   ShoppingCartIcon,
   UsersIcon,
   XIcon,
@@ -212,10 +214,35 @@ interface AdminTileProps {
   shortcut: Shortcut
   size: ShortcutSize
   onRequestDelete: (shortcut: Shortcut) => void
+  onRename: (id: string, newLabel: string) => void
 }
 
-function AdminTile({ shortcut, size, onRequestDelete }: AdminTileProps) {
+function AdminTile({ shortcut, size, onRequestDelete, onRename }: AdminTileProps) {
   const cfg = TILE_CFG[size]
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState("")
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDraft(shortcut.label)
+    setIsEditing(true)
+  }
+
+  const confirmEdit = () => {
+    const trimmed = draft.trim()
+    if (trimmed && trimmed !== shortcut.label) onRename(shortcut.id, trimmed)
+    setIsEditing(false)
+  }
+
+  const cancelEdit = () => setIsEditing(false)
+
+  useEffect(() => {
+    if (isEditing) {
+      editInputRef.current?.focus()
+      editInputRef.current?.select()
+    }
+  }, [isEditing])
 
   return (
     <div
@@ -226,6 +253,7 @@ function AdminTile({ shortcut, size, onRequestDelete }: AdminTileProps) {
         alignItems: "center",
         gap: cfg.gap,
         padding: cfg.padding,
+        paddingBottom: "1.75rem", // extra room for the rename button
         background: "var(--color-surface)",
         border: "1.5px solid var(--color-surface-edge)",
         borderRadius: "var(--radius-md)",
@@ -289,20 +317,84 @@ function AdminTile({ shortcut, size, onRequestDelete }: AdminTileProps) {
 
       <ShortcutIcon shortcut={shortcut} size={size} />
 
-      <span
+      {isEditing ? (
+        <input
+          ref={editInputRef}
+          value={draft}
+          onChange={(e) => setDraft((e.target as HTMLInputElement).value)}
+          onBlur={confirmEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); confirmEdit() }
+            if (e.key === "Escape") cancelEdit()
+          }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            fontSize: cfg.fontSize,
+            fontWeight: 500,
+            color: "var(--color-text)",
+            lineHeight: 1.3,
+            width: "100%",
+            border: "1.5px solid var(--color-accent)",
+            borderRadius: 6,
+            padding: "0.2rem 0.4rem",
+            background: "var(--color-bg)",
+            textAlign: "center",
+            fontFamily: "inherit",
+            outline: "none",
+          }}
+        />
+      ) : (
+        <span
+          style={{
+            fontSize: cfg.fontSize,
+            fontWeight: 500,
+            color: "var(--color-text)",
+            lineHeight: 1.3,
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {shortcut.label}
+        </span>
+      )}
+
+      {/* Rename / edit button */}
+      <button
+        onClick={startEdit}
+        aria-label={`Rename ${shortcut.label}`}
+        title="Rename"
         style={{
-          fontSize: cfg.fontSize,
-          fontWeight: 500,
-          color: "var(--color-text)",
-          lineHeight: 1.3,
-          maxWidth: "100%",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          position: "absolute",
+          bottom: 5,
+          right: 5,
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          border: "1.5px solid var(--color-surface-edge)",
+          background: "var(--color-bg)",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
+          color: "var(--color-text-muted)",
+          transition: "background 0.12s, border-color 0.12s, color 0.12s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "var(--color-accent-light)"
+          e.currentTarget.style.borderColor = "var(--color-accent)"
+          e.currentTarget.style.color = "var(--color-accent)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--color-bg)"
+          e.currentTarget.style.borderColor = "var(--color-surface-edge)"
+          e.currentTarget.style.color = "var(--color-text-muted)"
         }}
       >
-        {shortcut.label}
-      </span>
+        <PencilSimpleIcon size={10} weight="bold" />
+      </button>
     </div>
   )
 }
@@ -663,6 +755,16 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState("")
   const [recentSites, setRecentSites] = useState<VisitedSite[]>([])
+  const [selectedChipUrl, setSelectedChipUrl] = useState<string | null>(null)
+  const [prefillIconUrl, setPrefillIconUrl] = useState("")
+
+  const urlInputRef = useRef<HTMLInputElement>(null)
+  const labelInputRef = useRef<HTMLInputElement>(null)
+
+  // Focus the URL field on mount
+  useEffect(() => {
+    urlInputRef.current?.focus()
+  }, [])
 
   // Load most-visited sites from activity log
   useEffect(() => {
@@ -730,20 +832,33 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
     }
     setBusy(true)
     const finalLabel = label.trim() || hostname.replace(/^www\./, "")
-    const iconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`
+    // Use the pre-fetched icon when the URL still matches the selected chip
+    const iconUrl =
+      prefillIconUrl && selectedChipUrl === fullUrl
+        ? prefillIconUrl
+        : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`
     onAdd(fullUrl, finalLabel, iconUrl)
     setBusy(false)
   }
 
-  // Quick-add: immediately call onAdd without going through the form
-  const quickAdd = (site: QuickSite | VisitedSite) => {
+  // Pre-fill the form from a chip click — lets the caregiver rename before confirming
+  const fillForm = (site: QuickSite | VisitedSite) => {
     try {
       const hostname = new URL(site.url).hostname
       const iconUrl =
         "iconUrl" in site
           ? site.iconUrl
           : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`
-      onAdd(site.url, site.label, iconUrl)
+      setUrl(site.url)
+      setLabel(site.label)
+      setPrefillIconUrl(iconUrl)
+      setSelectedChipUrl(site.url)
+      setErr("")
+      // Focus the label field so the caregiver can rename immediately
+      setTimeout(() => {
+        labelInputRef.current?.focus()
+        labelInputRef.current?.select()
+      }, 0)
     } catch {
       /* ignore */
     }
@@ -802,20 +917,21 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
 
         {/* ── Popular sites ───────────────────────────────────────────────── */}
         <div>
-          <p style={sectionLabel}>Popular sites</p>
+          <p style={sectionLabel}>Popular sites — click to pre-fill, then rename if you like</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
             {POPULAR_SITES.map((site) => {
               const existing = isExisting(site.url)
+              const selected = selectedChipUrl === site.url
               return (
                 <button
                   key={site.url}
                   type="button"
                   disabled={existing}
-                  onClick={() => quickAdd(site)}
-                  title={existing ? "Already added" : `Add ${site.label}`}
-                  style={chipStyle(existing)}
+                  onClick={() => !existing && fillForm(site)}
+                  title={existing ? "Already added" : `Select ${site.label}`}
+                  style={chipStyle(existing, selected)}
                   onMouseEnter={(e) => {
-                    if (!existing) {
+                    if (!existing && !selected) {
                       e.currentTarget.style.background = "var(--color-surface)"
                       e.currentTarget.style.borderColor =
                         "var(--color-accent-light)"
@@ -823,7 +939,7 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!existing) {
+                    if (!existing && !selected) {
                       e.currentTarget.style.background = "var(--color-bg)"
                       e.currentTarget.style.borderColor =
                         "var(--color-surface-edge)"
@@ -856,16 +972,17 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
               {recentSites.map((site) => {
                 const existing = isExisting(site.url)
+                const selected = selectedChipUrl === site.url
                 return (
                   <button
                     key={site.url}
                     type="button"
                     disabled={existing}
-                    onClick={() => quickAdd(site)}
-                    title={existing ? "Already added" : `Add ${site.label}`}
-                    style={chipStyle(existing)}
+                    onClick={() => !existing && fillForm(site)}
+                    title={existing ? "Already added" : `Select ${site.label}`}
+                    style={chipStyle(existing, selected)}
                     onMouseEnter={(e) => {
-                      if (!existing) {
+                      if (!existing && !selected) {
                         e.currentTarget.style.background =
                           "var(--color-surface)"
                         e.currentTarget.style.borderColor =
@@ -874,7 +991,7 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!existing) {
+                      if (!existing && !selected) {
                         e.currentTarget.style.background = "var(--color-bg)"
                         e.currentTarget.style.borderColor =
                           "var(--color-surface-edge)"
@@ -951,10 +1068,17 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
           <label style={labelStyle}>
             Website address
             <input
+              ref={urlInputRef}
               type="text"
               value={url}
-              autoFocus
-              onChange={(e) => setUrl((e.target as HTMLInputElement).value)}
+              onChange={(e) => {
+                setUrl((e.target as HTMLInputElement).value)
+                // Clear chip selection when user edits the URL manually
+                if (selectedChipUrl) {
+                  setSelectedChipUrl(null)
+                  setPrefillIconUrl("")
+                }
+              }}
               onBlur={handleUrlBlur}
               placeholder="e.g. youtube.com"
               style={inputStyle}
@@ -962,8 +1086,9 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
           </label>
 
           <label style={labelStyle}>
-            Label (optional)
+            Name (you can change it)
             <input
+              ref={labelInputRef}
               type="text"
               value={label}
               onChange={(e) => setLabel((e.target as HTMLInputElement).value)}
@@ -1032,20 +1157,28 @@ const sectionLabel: React.CSSProperties = {
   letterSpacing: "0.06em",
 }
 
-function chipStyle(disabled: boolean): React.CSSProperties {
+function chipStyle(disabled: boolean, selected = false): React.CSSProperties {
   return {
     display: "inline-flex",
     alignItems: "center",
     gap: "0.35rem",
     padding: "0.35rem 0.75rem",
-    background: disabled ? "transparent" : "var(--color-bg)",
-    border: "1.5px solid var(--color-surface-edge)",
+    background: selected
+      ? "var(--color-accent-light)"
+      : disabled
+        ? "transparent"
+        : "var(--color-bg)",
+    border: `1.5px solid ${selected ? "var(--color-accent)" : "var(--color-surface-edge)"}`,
     borderRadius: 20,
     fontSize: "0.875rem",
     fontWeight: 600,
     fontFamily: "inherit",
     cursor: disabled ? "default" : "pointer",
-    color: disabled ? "var(--color-text-muted)" : "var(--color-text)",
+    color: selected
+      ? "var(--color-accent)"
+      : disabled
+        ? "var(--color-text-muted)"
+        : "var(--color-text)",
     opacity: disabled ? 0.55 : 1,
     transition: "background 0.12s, border-color 0.12s, color 0.12s",
   }
@@ -1255,6 +1388,15 @@ export function ShortcutGrid({ adminMode }: Props) {
     setUndoSnap(null)
   }
 
+  // ── Rename ────────────────────────────────────────────────────────────────
+  const handleRename = async (id: string, newLabel: string) => {
+    const next = shortcuts.map((sc) =>
+      sc.id === id ? { ...sc, label: newLabel } : sc,
+    )
+    setShortcuts(next)
+    await storage.local.set("shortcuts", next)
+  }
+
   // ── Add (A-05) ────────────────────────────────────────────────────────────
   const handleAdd = async (url: string, label: string, iconUrl: string) => {
     const maxPos = shortcuts.reduce((m, sc) => Math.max(m, sc.position), -1)
@@ -1338,6 +1480,7 @@ export function ShortcutGrid({ adminMode }: Props) {
                 shortcut={sc}
                 size={shortcutSize}
                 onRequestDelete={setPendingDelete}
+                onRename={handleRename}
               />
             ) : (
               <ViewTile key={sc.id} shortcut={sc} size={shortcutSize} />
@@ -1379,7 +1522,7 @@ export function ShortcutGrid({ adminMode }: Props) {
                 e.currentTarget.style.color = "var(--color-text-muted)"
               }}
             >
-              <span style={{ fontSize: "1.5rem", lineHeight: 1 }}>+</span>
+              <PlusIcon size={22} weight="bold" />
               Add shortcut
             </button>
           )}
