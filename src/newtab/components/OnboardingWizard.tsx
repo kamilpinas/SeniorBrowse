@@ -1043,25 +1043,47 @@ export function OnboardingWizard({ onComplete }: Props) {
           <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
         )}
 
-        {/* Skip current optional step only — does not exit the wizard */}
-        {step >= 2 && step <= 5 && (
-          <button
-            onClick={() => setStep((s) => s + 1)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--color-text-subtle)",
-              fontSize: "0.85rem",
-              cursor: "pointer",
-              padding: "0.25rem 0",
-              textAlign: "center" as const,
-              textDecoration: "underline",
-              textDecorationStyle: "dotted" as const,
-              textUnderlineOffset: "3px",
-            }}
-          >
-            Skip this step →
-          </button>
+        {/* Back / skip row for optional steps */}
+        {step >= 2 && step <= 6 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.25rem" }}>
+            {/* ← Back: go to previous step */}
+            <button
+              onClick={() => setStep((s) => s - 1)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--color-text-subtle)",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                padding: "0.25rem 0",
+                textDecoration: "underline",
+                textDecorationStyle: "dotted" as const,
+                textUnderlineOffset: "3px",
+              }}
+            >
+              ← Back
+            </button>
+
+            {/* Skip this step → only on non-final optional steps */}
+            {step >= 2 && step <= 5 && (
+              <button
+                onClick={() => setStep((s) => s + 1)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--color-text-subtle)",
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  padding: "0.25rem 0",
+                  textDecoration: "underline",
+                  textDecorationStyle: "dotted" as const,
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                Skip this step →
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

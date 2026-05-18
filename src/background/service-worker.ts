@@ -265,6 +265,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return
   const url = tab.url ?? ""
   const title = tab.title ?? url
+  // Only process regular web pages — skip extension pages, new-tab, settings, etc.
   if (!url.startsWith("http://") && !url.startsWith("https://")) return
   await logActivity(url, title, "visit")
 

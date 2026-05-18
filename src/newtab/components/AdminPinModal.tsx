@@ -117,6 +117,9 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
     }, 900)
   }
 
+  // Show recovery hint after the first wrong attempt.
+  const showRecoveryHint = attempts >= 1 && !isLocked
+
   return (
     /* Backdrop */
     <div
@@ -332,6 +335,27 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
         >
           Cancel
         </button>
+
+        {/* PIN recovery hint — shown after first wrong attempt */}
+        {showRecoveryHint && (
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.78rem",
+              color: "var(--color-text-muted)",
+              lineHeight: 1.5,
+              maxWidth: 260,
+              textAlign: "center",
+            }}
+          >
+            Forgot your PIN?{" "}
+            <strong style={{ color: "var(--color-text)" }}>
+              The original default is 1234.
+            </strong>{" "}
+            If you changed it, open Settings and look under Profile, or reinstall
+            the extension to reset everything.
+          </p>
+        )}
       </div>
     </div>
   )

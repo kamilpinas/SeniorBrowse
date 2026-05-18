@@ -476,8 +476,9 @@ export function App() {
       {/* Panel button removed — panel is always-open by design.
           If closed, the gate screen above handles re-opening. */}
 
-      {/* Dark / light mode toggle — fixed bottom-left corner */}
-      <button
+      {/* Dark / light mode toggle — fixed bottom-left, caregiver-only (UX-06).
+          Hidden from seniors to prevent accidental theme changes. */}
+      {adminMode && <button
         type="button"
         title={
           theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
@@ -517,7 +518,7 @@ export function App() {
       >
         {theme === "dark" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
         {theme === "dark" ? "Light mode" : "Dark mode"}
-      </button>
+      </button>}
 
       {/* Caregiver settings button — visible in the bottom-right corner.
           Hidden when already in admin mode (the banner handles that). */}

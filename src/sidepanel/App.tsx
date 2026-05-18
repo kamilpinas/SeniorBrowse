@@ -1472,19 +1472,31 @@ export function App() {
 
   const handleBack = useCallback(async () => {
     const tab = await getTab()
-    if (tab?.id != null)
-      await (chrome.tabs as unknown as { goBack(id: number): Promise<void> })
-        .goBack(tab.id)
-        .catch(() => {})
-  }, [getTab])
+    if (tab?.id == null) return
+    const urlBefore = tab.url
+    await (chrome.tabs as unknown as { goBack(id: number): Promise<void> })
+      .goBack(tab.id)
+      .catch(() => {})
+    // Give Chrome a moment to start navigating, then check if anything moved.
+    // If the URL is unchanged the tab was already at the beginning of its history.
+    setTimeout(async () => {
+      const after = await getTab()
+      if (after?.url === urlBefore) showToast("Nothing to go back to", "error")
+    }, 400)
+  }, [getTab, showToast])
 
   const handleForward = useCallback(async () => {
     const tab = await getTab()
-    if (tab?.id != null)
-      await (chrome.tabs as unknown as { goForward(id: number): Promise<void> })
-        .goForward(tab.id)
-        .catch(() => {})
-  }, [getTab])
+    if (tab?.id == null) return
+    const urlBefore = tab.url
+    await (chrome.tabs as unknown as { goForward(id: number): Promise<void> })
+      .goForward(tab.id)
+      .catch(() => {})
+    setTimeout(async () => {
+      const after = await getTab()
+      if (after?.url === urlBefore) showToast("Nothing to go forward to", "error")
+    }, 400)
+  }, [getTab, showToast])
 
   const handleScrollTop = useCallback(async () => {
     const tab = await getTab()

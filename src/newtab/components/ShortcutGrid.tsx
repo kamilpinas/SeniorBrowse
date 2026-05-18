@@ -1365,8 +1365,9 @@ export function ShortcutGrid({ adminMode }: Props) {
   // ── Global size change ────────────────────────────────────────────────────
   const handleSizeChange = async (size: ShortcutSize) => {
     setShortcutSize(size)
-    const config = await storage.local.get("config")
-    await storage.local.set("config", { ...config, shortcutSize: size })
+    // Use update() (deep-merge) instead of set() so concurrent writes to other
+    // config keys are not silently overwritten (B-10).
+    await storage.local.update("config", { shortcutSize: size })
   }
 
   // ── Delete + undo (A-06) ──────────────────────────────────────────────────

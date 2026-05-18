@@ -762,18 +762,38 @@ function SecurityTab({
     })
   }
 
+  // Normalise a free-text line into a bare hostname.
+  // Handles entries like "https://google.com/search?q=foo" → "google.com".
+  // Entries that are already bare hostnames pass through unchanged.
+  const normaliseEntry = (raw: string): string => {
+    const s = raw.trim()
+    if (!s) return ""
+    try {
+      // Prepend a protocol if missing so URL() can parse it.
+      const withProto = s.includes("://") ? s : `https://${s}`
+      return new URL(withProto).hostname.toLowerCase()
+    } catch {
+      // Not parseable — return as-is (validator in service-worker will just not match it).
+      return s.toLowerCase()
+    }
+  }
+
+  const parseList = (text: string) =>
+    text.split("\n").map(normaliseEntry).filter(Boolean)
+
   const saveListFields = async () => {
-    const whitelist = wl
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const blacklist = bl
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
+    const whitelist = parseList(wl)
+    const blacklist = parseList(bl)
+    // Normalise the textarea values so the user sees cleaned-up entries.
+    setWl(whitelist.join("\n"))
+    setBl(blacklist.join("\n"))
     await storage.local.update("config", { security: { whitelist, blacklist } })
     showToast("Site lists saved")
   }
+
+  // Detect if user typed a full URL so we can show a normalisation hint.
+  const hasFullUrl = (text: string) =>
+    text.split("\n").some((l) => l.trim().includes("://"))
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -890,6 +910,11 @@ function SecurityTab({
             placeholder="google.com&#10;youtube.com"
             onChange={(e) => setWl((e.target as HTMLTextAreaElement).value)}
           />
+          {hasFullUrl(wl) && (
+            <p style={{ margin: "0.25rem 0 0", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+              ℹ️ Full URLs will be trimmed to hostname on save (e.g. https://google.com → google.com)
+            </p>
+          )}
         </Field>
 
         <Field label="Always block these sites (one per line)">
@@ -899,6 +924,11 @@ function SecurityTab({
             placeholder="example-scam.com"
             onChange={(e) => setBl((e.target as HTMLTextAreaElement).value)}
           />
+          {hasFullUrl(bl) && (
+            <p style={{ margin: "0.25rem 0 0", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+              ℹ️ Full URLs will be trimmed to hostname on save (e.g. https://example.com/path → example.com)
+            </p>
+          )}
         </Field>
 
         <SaveBtn onClick={saveListFields} />
