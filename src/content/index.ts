@@ -68,8 +68,8 @@ function injectPanelButton() {
 }
 
 // ── Panel-closed banner ───────────────────────────────────────────────────────
-// A non-blocking sticky banner at the top of the page when the side panel is
-// closed. The senior can still read and interact with the page beneath it.
+// A large, senior-friendly sticky banner fixed at the BOTTOM of the page.
+// The senior can still read and scroll the page above it.
 // Previous design was a full-screen blocker (UX-03 audit finding).
 
 function showOverlay() {
@@ -78,40 +78,63 @@ function showOverlay() {
   const styleEl = document.createElement("style")
   styleEl.id = "sw-closed-overlay-style"
   styleEl.textContent = `
+    @keyframes sw-banner-in {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    @keyframes sw-btn-pulse {
+      0%,100% { box-shadow: 0 0 0 0   rgba(255,255,255,0.55); }
+      50%      { box-shadow: 0 0 0 10px rgba(255,255,255,0);   }
+    }
     #sw-closed-overlay {
       position:        fixed;
-      top:             0;
+      bottom:          0;
       left:            0;
       right:           0;
       z-index:         2147483647;
       background:      #b46428;
       color:           #fff;
       display:         flex;
+      flex-direction:  column;
       align-items:     center;
       justify-content: center;
       gap:             1rem;
-      padding:         0.65rem 1.25rem;
+      padding:         1.5rem 1.5rem 2rem;
       font-family:     ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      font-size:       0.95rem;
-      font-weight:     600;
-      box-shadow:      0 2px 12px rgba(42,38,32,0.25);
-      flex-wrap:       wrap;
+      box-shadow:      0 -4px 24px rgba(42,38,32,0.35);
+      animation:       sw-banner-in 0.3s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    #sw-closed-overlay-msg {
+      font-size:   1.45rem;
+      font-weight: 700;
+      line-height: 1.3;
+      text-align:  center;
+      letter-spacing: -0.01em;
+    }
+    #sw-closed-overlay-sub {
+      font-size:   1.05rem;
+      font-weight: 500;
+      opacity:     0.88;
+      text-align:  center;
+      margin-top:  -0.35rem;
     }
     #sw-closed-overlay-btn {
-      font-size:     0.9rem;
-      font-weight:   700;
-      padding:       0.4rem 1.1rem;
+      font-size:     1.25rem;
+      font-weight:   800;
+      padding:       1rem 2.5rem;
       background:    #fff;
-      color:         #b46428;
+      color:         #8c3e00;
       border:        none;
-      border-radius: 8px;
+      border-radius: 14px;
       cursor:        pointer;
       font-family:   inherit;
       white-space:   nowrap;
-      transition:    opacity 0.15s, transform 0.1s;
-      flex-shrink:   0;
+      letter-spacing: 0.01em;
+      animation:     sw-btn-pulse 2s ease-in-out infinite;
+      transition:    background 0.15s, transform 0.1s;
+      min-width:     220px;
     }
-    #sw-closed-overlay-btn:hover  { opacity: 0.88; }
+    #sw-closed-overlay-btn:hover  { background: #f5f0e8; }
     #sw-closed-overlay-btn:active { transform: scale(0.97); }
   `
   ;(document.head ?? document.documentElement).appendChild(styleEl)
@@ -119,10 +142,11 @@ function showOverlay() {
   const overlay = document.createElement("div")
   overlay.id = "sw-closed-overlay"
   overlay.innerHTML = `
-    <span>☰ Your helper panel is closed</span>
+    <div id="sw-closed-overlay-msg">📋 Your helper panel is closed</div>
+    <div id="sw-closed-overlay-sub">Tap the button below to open it again</div>
     <button id="sw-closed-overlay-btn">Open Helper Panel</button>
   `
-  ;(document.body ?? document.documentElement).prepend(overlay)
+  ;(document.body ?? document.documentElement).appendChild(overlay)
 
   document
     .getElementById("sw-closed-overlay-btn")
