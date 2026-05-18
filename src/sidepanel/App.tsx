@@ -242,6 +242,7 @@ function ZoomTile({
       onClick={onClick}
       disabled={disabled}
       aria-label={`${label}: ${FONT_SIZE_LABELS[currentSize]}`}
+      data-panel-tour="zoom"
       onMouseEnter={() => {
         if (!disabled) setHov(true)
       }}
@@ -838,69 +839,67 @@ const TOUR_ICON_COLOR = "var(--sw-accent)"
 const PANEL_TOUR_STEPS: PanelTourStep[] = [
   {
     target: null,
-    icon: (
-      <HandWavingIcon
-        size={TOUR_ICON_SIZE}
-        weight="fill"
-        color={TOUR_ICON_COLOR}
-      />
-    ),
+    icon: <HandWavingIcon size={TOUR_ICON_SIZE} weight="fill" color={TOUR_ICON_COLOR} />,
     title: "Welcome to your helper panel!",
-    body: "Here you'll find quick buttons to help you browse. Let me show you around!",
+    body: "Here you'll find quick buttons to help you browse. Let me show you each one!",
   },
   {
     target: "home",
-    icon: (
-      <HouseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />
-    ),
+    icon: <HouseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
     title: "Go Home",
     body: "This big button takes you back to your start page any time you get lost.",
   },
   {
+    target: "back",
+    icon: <ArrowLeftIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Go Back or Forward",
+    body: "The Back button returns to the previous page. The Forward button goes forward again — just like flipping pages in a book.",
+  },
+  {
     target: "volume",
-    icon: (
-      <SpeakerHighIcon
-        size={TOUR_ICON_SIZE}
-        weight="bold"
-        color={TOUR_ICON_COLOR}
-      />
-    ),
+    icon: <SpeakerHighIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
     title: "Control the Volume",
-    body: "Use this to turn sound louder, quieter, or mute it completely.",
+    body: "Use MORE and LESS to change how loud the sound is, or tap MUTE to silence it completely.",
   },
   {
     target: "scroll",
-    icon: (
-      <ArrowsDownUpIcon
-        size={TOUR_ICON_SIZE}
-        weight="bold"
-        color={TOUR_ICON_COLOR}
-      />
-    ),
-    title: "Scroll the Page",
-    body: "Move the page up or down. Use Back to Top to jump straight to the very top of the page.",
+    icon: <ArrowsDownUpIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Move the Page Up or Down",
+    body: "Use UP and DOWN to scroll through a long page. Tap BACK TO TOP to jump straight back to the beginning.",
+  },
+  {
+    target: "zoom",
+    icon: <TextAaIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Make Text Bigger",
+    body: "Tap TEXT SIZE to make the writing on the page bigger. Tap it again to go back to normal size.",
+  },
+  {
+    target: "fullscreen",
+    icon: <ArrowsOutIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Full Screen",
+    body: "FULL SCREEN makes the page fill the whole display — great for reading or watching videos. Tap SHRINK to bring everything back.",
+  },
+  {
+    target: "refresh",
+    icon: <ArrowsClockwiseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Refresh the Page",
+    body: "If a page looks wrong or stopped loading, tap REFRESH to reload it from scratch.",
   },
   {
     target: "save",
-    icon: (
-      <BookmarkSimpleIcon
-        size={TOUR_ICON_SIZE}
-        weight="bold"
-        color={TOUR_ICON_COLOR}
-      />
-    ),
+    icon: <BookmarkSimpleIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
     title: "Save Pages You Like",
-    body: "Tap this to save the page you're reading. Your caregiver will see all your saved pages.",
+    body: "Found something interesting? Tap SAVE PAGE to keep it. Your caregiver will see all your saved pages.",
+  },
+  {
+    target: "exit",
+    icon: <XCircleIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    title: "Close the Page",
+    body: "CLOSE PAGE closes the page you're on and takes you to the next one. If it's the last page open, it will close the browser.",
   },
   {
     target: null,
-    icon: (
-      <ConfettiIcon
-        size={TOUR_ICON_SIZE}
-        weight="fill"
-        color={TOUR_ICON_COLOR}
-      />
-    ),
+    icon: <ConfettiIcon size={TOUR_ICON_SIZE} weight="fill" color={TOUR_ICON_COLOR} />,
     title: "You're all set!",
     body: "Tap any button to start browsing. Your caregiver can always help if you need anything.",
   },
