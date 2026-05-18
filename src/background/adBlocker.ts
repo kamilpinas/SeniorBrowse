@@ -9,9 +9,9 @@ export async function updateAdBlocking(enable: boolean): Promise<void> {
       enableRulesetIds: enable ? [RULESET_ID] : [],
       disableRulesetIds: enable ? [] : [RULESET_ID],
     })
-    console.info('[SeniorWeb] ad blocking', enable ? 'enabled' : 'disabled')
+    console.info('[SeniorBrowse] ad blocking', enable ? 'enabled' : 'disabled')
   } catch (err) {
     // Fails gracefully in dev (no extension context) or when already in desired state.
-    console.warn('[SeniorWeb] updateAdBlocking failed:', err)
+    console.warn('[SeniorBrowse] updateAdBlocking failed:', err)
   }
 }

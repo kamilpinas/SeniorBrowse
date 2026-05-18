@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "SeniorWeb",
+  "name": "SeniorBrowse",
   "version": "0.0.1",
   "description": "Browse the internet without fear. Simple interface, big buttons, no surprises.",
   "permissions": [
@@ -34,7 +34,7 @@
     "default_path": "sidepanel/index.html"
   },
   "action": {
-    "default_title": "SeniorWeb — open panel"
+    "default_title": "SeniorBrowse — open panel"
   },
   "commands": {
     "_execute_action": {
@@ -42,7 +42,7 @@
         "default": "Alt+Shift+P",
         "mac": "Alt+Shift+P"
       },
-      "description": "Open / close the SeniorWeb panel"
+      "description": "Open / close the SeniorBrowse panel"
     }
   },
   "declarative_net_request": {

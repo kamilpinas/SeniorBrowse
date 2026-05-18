@@ -1,4 +1,4 @@
-# SeniorWeb — Key Marketing Insights
+# SeniorBrowse — Key Marketing Insights
 
 ## 1. Product Success Definition
 
@@ -27,12 +27,12 @@ They are not actively looking for a solution. This means there is no active dema
 
 ## 3. Positioning
 
-### What SeniorWeb is NOT
+### What SeniorBrowse is NOT
 - Not another adblocker
 - Not parental control software (stigmatising for seniors)
 - Not a new browser (installation barrier)
 
-### What SeniorWeb IS
+### What SeniorBrowse IS
 The only extension that combines three things in one:
 1. UX designed for seniors (large icons, simple navigation)
 2. Caregiver panel for configuration — no technical knowledge required
@@ -107,4 +107,4 @@ Everything else (drag-and-drop, profiles, history, cloud) — after first users.
 
 ---
 
-*Generated from market analysis — SeniorWeb, May 2026*
+*Generated from market analysis — SeniorBrowse, May 2026*

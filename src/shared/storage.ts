@@ -96,7 +96,7 @@ function getRawApi(areaName: 'local' | 'session'): RawArea {
   }
   if (!memFallback.has(areaName)) {
     console.warn(
-      `[SeniorWeb] chrome.storage.${areaName} not available — using in-memory fallback (dev mode)`,
+      `[SeniorBrowse] chrome.storage.${areaName} not available — using in-memory fallback (dev mode)`,
     )
     memFallback.set(areaName, new Map())
   }

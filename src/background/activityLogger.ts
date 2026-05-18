@@ -22,6 +22,6 @@ export async function logActivity(
     const next = [...log, entry].slice(-MAX_LOG_ENTRIES)
     await storage.local.set('activityLog', next)
   } catch (err) {
-    console.warn('[SeniorWeb] activity log write failed:', err)
+    console.warn('[SeniorBrowse] activity log write failed:', err)
   }
 }

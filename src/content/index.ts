@@ -1,4 +1,4 @@
-// Content script — per-page helpers for the SeniorWeb side panel.
+// Content script — per-page helpers for the SeniorBrowse side panel.
 // The visual panel is now a native Chrome Side Panel (sidepanel/index.html).
 // This script handles:
 //   • TAB_COMMAND messages from the side panel (scrollTop)

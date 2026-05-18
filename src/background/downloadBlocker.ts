@@ -12,9 +12,9 @@ export async function handleDownload(
     await chrome.downloads.cancel(item.id)
     // Erase from the downloads shelf so the user doesn't see a cancelled entry.
     await chrome.downloads.erase({ id: item.id })
-    console.info('[SeniorWeb] blocked download:', item.url)
+    console.info('[SeniorBrowse] blocked download:', item.url)
   } catch (err) {
     // Download may have already completed before we could cancel (race condition).
-    console.warn('[SeniorWeb] could not cancel download', item.id, err)
+    console.warn('[SeniorBrowse] could not cancel download', item.id, err)
   }
 }

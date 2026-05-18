@@ -1,4 +1,4 @@
-# SeniorWeb — Browser Extension for Seniors
+# SeniorBrowse — Browser Extension for Seniors
 
 > A Chrome extension that makes the web safe, simple and welcoming for older adults — while giving caregivers the tools to configure and monitor it invisibly.
 
@@ -6,7 +6,7 @@
 
 ## What it does
 
-SeniorWeb replaces Chrome's new tab page with a clean, high-contrast home screen and adds a persistent helper panel on every page. The senior gets a calm, easy-to-use browsing experience. The caregiver configures everything behind a PIN — the senior never sees settings, warnings about trials, or anything technical.
+SeniorBrowse replaces Chrome's new tab page with a clean, high-contrast home screen and adds a persistent helper panel on every page. The senior gets a calm, easy-to-use browsing experience. The caregiver configures everything behind a PIN — the senior never sees settings, warnings about trials, or anything technical.
 
 **Two users. One extension.**
 
@@ -102,7 +102,7 @@ Full theme support across both surfaces. Toggle sits bottom-left on the home scr
 
 ### ⏳ Trial System
 
-30-day free trial with a 3-day grace period. The caregiver sees a countdown and usage stats; the senior never sees trial language, payment mentions or license information. On expiry, a neutral screen appears: *"SeniorWeb needs attention — please ask [Caregiver] to take a look."*
+30-day free trial with a 3-day grace period. The caregiver sees a countdown and usage stats; the senior never sees trial language, payment mentions or license information. On expiry, a neutral screen appears: *"SeniorBrowse needs attention — please ask [Caregiver] to take a look."*
 
 ---
 
@@ -160,7 +160,7 @@ The compiled extension lands in `dist/`.
 3. Click **Load unpacked**
 4. Select the `dist/` folder
 
-Open a new tab — the SeniorWeb home screen appears immediately.
+Open a new tab — the SeniorBrowse home screen appears immediately.
 
 ### Development
 

@@ -42,7 +42,7 @@ function detectMode(): 'column' | 'floating' {
 // ── Zoom styles injected into outer document (P-04) ───────────────────────────
 
 function injectZoomStyles() {
-  const id = 'seniorweb-zoom-styles'
+  const id = 'seniorbrowse-zoom-styles'
   if (document.getElementById(id)) return
   const el = document.createElement('style')
   el.id = id
@@ -113,7 +113,7 @@ export async function mount() {
 
   // ── Create shadow host ────────────────────────────────────────────────────
   const host = document.createElement('div')
-  host.id = 'seniorweb-host'
+  host.id = 'seniorbrowse-host'
   Object.assign(host.style, {
     position: 'fixed',
     top: '0',
@@ -142,7 +142,7 @@ export async function mount() {
   //   content box, so they are unaffected — that's unavoidable without the native
   //   browser sidebar API.
   if (mode === 'column') {
-    const pushId = 'seniorweb-column-push'
+    const pushId = 'seniorbrowse-column-push'
     if (!document.getElementById(pushId)) {
       const paddingProp = position === 'left' ? 'padding-left' : 'padding-right'
       const pushStyle = document.createElement('style')

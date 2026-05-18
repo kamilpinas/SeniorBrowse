@@ -1,3 +1,3 @@
 export function App() {
-  return <div>SeniorWeb settings — scaffold</div>
+  return <div>SeniorBrowse settings — scaffold</div>
 }

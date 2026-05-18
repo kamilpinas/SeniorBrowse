@@ -1,8 +1,8 @@
-# SeniorWeb - Browser Extension for Seniors
+# SeniorBrowse - Browser Extension for Seniors
 
 ## Executive Summary
 
-**SeniorWeb** is a universal browser extension (Chrome, Firefox, Edge) that enables older adults (50+) to safely and intuitively browse the internet. A caregiver (family member, medical assistant) configures the extension once, and the senior can browse independently without fear of accidental clicks, pop-ups, or scams.
+**SeniorBrowse** is a universal browser extension (Chrome, Firefox, Edge) that enables older adults (50+) to safely and intuitively browse the internet. A caregiver (family member, medical assistant) configures the extension once, and the senior can browse independently without fear of accidental clicks, pop-ups, or scams.
 
 ---
 

@@ -1,6 +1,6 @@
-# SeniorWeb MVP — Task List
+# SeniorBrowse MVP — Task List
 
-**Architecture:** SeniorWeb Chrome Extension (Manifest V3)
+**Architecture:** SeniorBrowse Chrome Extension (Manifest V3)
 **Phase:** MVP — Phase 1
 **Total tasks:** 42
 

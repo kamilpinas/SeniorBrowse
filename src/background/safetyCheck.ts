@@ -35,7 +35,7 @@ export async function checkUrl(url: string): Promise<CheckResult> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client: { clientId: 'seniorweb', clientVersion: '0.0.1' },
+        client: { clientId: 'seniorbrowse', clientVersion: '0.0.1' },
         threatInfo: {
           threatTypes: [
             'MALWARE',
@@ -51,7 +51,7 @@ export async function checkUrl(url: string): Promise<CheckResult> {
     })
 
     if (!res.ok) {
-      console.warn('[SeniorWeb] Safe Browsing API error', res.status)
+      console.warn('[SeniorBrowse] Safe Browsing API error', res.status)
       return 'safe'
     }
 
@@ -73,7 +73,7 @@ export async function checkUrl(url: string): Promise<CheckResult> {
     return result
   } catch (err) {
     // Network errors → fail open (don't block the user on an API outage).
-    console.warn('[SeniorWeb] Safe Browsing check failed:', err)
+    console.warn('[SeniorBrowse] Safe Browsing check failed:', err)
     return 'safe'
   }
 }

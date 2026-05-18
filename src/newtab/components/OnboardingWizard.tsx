@@ -206,7 +206,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
         <HandIcon size={48} weight="fill" />
       </div>
       <div>
-        <h2 style={heading}>Welcome to SeniorWeb!</h2>
+        <h2 style={heading}>Welcome to SeniorBrowse!</h2>
         <p style={{ ...body, marginTop: "0.5rem" }}>
           Let's get everything set up in a few easy steps. It only takes about
           two minutes.
@@ -262,8 +262,8 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
         if (res.status === 403) {
           setError(
             data.reason === "device"
-              ? "This browser has already used its free trial. Please subscribe at easysurf.app to continue."
-              : "This email's free trial has already been used. Please subscribe at easysurf.app to continue.",
+              ? "This browser has already used its free trial. Please subscribe at seniorbrowse.app to continue."
+              : "This email's free trial has already been used. Please subscribe at seniorbrowse.app to continue.",
           )
         } else {
           setError(data.error ?? "Something went wrong. Please try again.")
@@ -896,7 +896,7 @@ function StepHandover({
       <div>
         <h2 style={heading}>All set!</h2>
         <p style={{ ...body, marginTop: "0.5rem" }}>
-          SeniorWeb is ready for <strong>{name}</strong>. Now ask them to sit
+          SeniorBrowse is ready for <strong>{name}</strong>. Now ask them to sit
           down with you for a quick walkthrough — it only takes two minutes.
         </p>
       </div>

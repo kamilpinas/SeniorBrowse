@@ -1,4 +1,4 @@
-# SeniorWeb — User Simulation Report
+# SeniorBrowse — User Simulation Report
 
 **Date:** May 1, 2026  
 **Method:** User Simulator — step-by-step conversation embodying a real user  
@@ -9,7 +9,7 @@
 
 ## Overarching Observation
 
-The biggest threat to this product is not technology — it is **fear**. Helen's fear of clicking something wrong, Mark's fear of breaking the settings, both of their fears of the unknown. SeniorWeb wins not through features — it wins by **reducing fear at every step**.
+The biggest threat to this product is not technology — it is **fear**. Helen's fear of clicking something wrong, Mark's fear of breaking the settings, both of their fears of the unknown. SeniorBrowse wins not through features — it wins by **reducing fear at every step**.
 
 ---
 
@@ -27,7 +27,7 @@ The biggest threat to this product is not technology — it is **fear**. Helen's
 
 ### Step 1 — Product Discovery
 
-Mark finds SeniorWeb through a search engine and lands on the landing page.
+Mark finds SeniorBrowse through a search engine and lands on the landing page.
 
 **✅ What works:**
 - Landing page with a short video demo (max 90 seconds)
@@ -108,7 +108,7 @@ After 30 days, Mark receives a notification that the trial is ending.
 
 **✅ What works:**
 - Trial-ending notification appears **7 days early** — not on the day of expiration
-- **Emotional anchor with the senior's name:** *"Helen used SeniorWeb 28 out of the last 30 days."* — the senior's name transforms a cold subscription message into a reminder of the relationship
+- **Emotional anchor with the senior's name:** *"Helen used SeniorBrowse 28 out of the last 30 days."* — the senior's name transforms a cold subscription message into a reminder of the relationship
 - **Everyday spending comparison:** *"That's less than one coffee a month."*
 
 **⚠️ Must have:**
@@ -133,7 +133,7 @@ After 30 days, Mark receives a notification that the trial is ending.
 
 ### Step 1 — Home Screen
 
-Helen opens the browser. She sees the SeniorWeb home screen.
+Helen opens the browser. She sees the SeniorBrowse home screen.
 
 **✅ What works:**
 - **Personalized greeting text:** *"Good morning, Helen! What would you like to do?"* with a few options (Check weather / Search for something / My shortcuts)
@@ -227,7 +227,7 @@ After a week Helen has a daily routine: weather in the morning, recipes before l
 
 ### Must have — without these the product doesn't work
 
-- **Smooth loading screen** between Chrome and SeniorWeb — zero flash, no white blank before the home screen renders
+- **Smooth loading screen** between Chrome and SeniorBrowse — zero flash, no white blank before the home screen renders
 - **Confirmation before deleting** an icon in the caregiver panel
 - **Undo action immediately after** performing it (Gmail "Undo" pattern — appears for 5 seconds)
 - **Text labels** under every icon in the sidebar (not icon alone)

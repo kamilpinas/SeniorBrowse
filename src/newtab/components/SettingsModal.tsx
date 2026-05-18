@@ -1435,7 +1435,7 @@ function TrialTab() {
             <CreditCardIcon size={28} color="var(--color-text-muted)" />
           </div>
           <div style={{ fontWeight: 700, textAlign: "center" as const }}>
-            Subscribe to keep using SeniorWeb
+            Subscribe to keep using SeniorBrowse
           </div>
           <a
             href={yearlyUrl}

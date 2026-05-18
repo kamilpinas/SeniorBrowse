@@ -1,4 +1,4 @@
-# SeniorWeb — System Architecture
+# SeniorBrowse — System Architecture
 
 **Date:** 2026-05-01
 **Status:** MVP — Phase 1
@@ -9,7 +9,7 @@
 
 ## Product Overview
 
-SeniorWeb is a Chrome extension with two distinct users:
+SeniorBrowse is a Chrome extension with two distinct users:
 
 - **Senior (end-user):** 50–80+, fears clicking the wrong thing, wants to browse safely and independently
 - **Caregiver (buyer/decision-maker):** Family member or medical caregiver who installs, configures, and monitors
@@ -72,7 +72,7 @@ Replaces Chrome's default new tab. This is the senior's "home."
 - Shortcut grid (large icons + text labels, configurable by caregiver)
 - Google search bar (large, prominent)
 - Clock display
-- Smooth loading screen (no white flash between Chrome and SeniorWeb)
+- Smooth loading screen (no white flash between Chrome and SeniorBrowse)
 
 **Admin mode overlay (injected from `/admin`):**
 - Shortcuts get resize handles + drag handles (SortableJS)
@@ -243,7 +243,7 @@ Install
       graceEndsAt = now() + 33 days (30 trial + 3 grace)
       status = "trial"
 
-Day 23 → Admin settings modal shows: "7 days left. Halina used SeniorWeb 20 of the last 23 days."
+Day 23 → Admin settings modal shows: "7 days left. Halina used SeniorBrowse 20 of the last 23 days."
 
 Day 30 → status = "grace"
           Senior continues normally
@@ -311,7 +311,7 @@ Phase 3 — Senior Wizard
 ## Project Structure
 
 ```
-/seniorweb
+/seniorbrowse
   /src
     /newtab
       index.html

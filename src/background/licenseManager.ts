@@ -71,6 +71,6 @@ export async function ensureTrialStatus(): Promise<void> {
       })
     }
   } catch (err) {
-    console.warn('[SeniorWeb] license check failed:', err)
+    console.warn('[SeniorBrowse] license check failed:', err)
   }
 }

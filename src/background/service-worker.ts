@@ -26,7 +26,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       await storage.local.set("installId", crypto.randomUUID())
     }
 
-    console.info("[SeniorWeb] default config seeded")
+    console.info("[SeniorBrowse] default config seeded")
   }
   await ensureTrialStatus()
   const config = await storage.local.get("config")
@@ -36,7 +36,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // This replaces the old onClicked admin-toggle behaviour.
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
 
-  console.info("[SeniorWeb] service worker ready")
+  console.info("[SeniorBrowse] service worker ready")
 })
 
 // Refresh trial status every time the service worker wakes up.
@@ -241,7 +241,7 @@ async function redirectTab(tabId: number, relativeUrl: string): Promise<void> {
   try {
     await chrome.tabs.update(tabId, { url: chrome.runtime.getURL(relativeUrl) })
   } catch (err) {
-    console.warn("[SeniorWeb] redirect failed:", err)
+    console.warn("[SeniorBrowse] redirect failed:", err)
   }
 }
 

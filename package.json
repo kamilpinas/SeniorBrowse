@@ -1,9 +1,9 @@
 {
-  "name": "seniorweb",
+  "name": "seniorbrowse",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SeniorWeb — Chrome extension that lets older adults browse safely. MVP scaffold.",
+  "description": "SeniorBrowse — Chrome extension that lets older adults browse safely. MVP scaffold.",
   "scripts": {
     "dev": "vite",
     "build": "vite build && vite build -c vite.config.content.js && vite build -c vite.config.background.js",
