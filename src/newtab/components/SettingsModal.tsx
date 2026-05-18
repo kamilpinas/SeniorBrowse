@@ -24,7 +24,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
-import { TRIAL_DAYS, SUSPICIOUS_LINK_MODES } from "@shared/constants"
+import { SUSPICIOUS_LINK_MODES } from "@shared/constants"
 import { FloatingToast, useToast } from "@shared/toast"
 import type { ToastType } from "@shared/toast"
 import type {
@@ -1270,10 +1270,14 @@ const STATUS_STYLE: Record<
   },
 }
 
+const VALIDATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-license`
+
 function TrialTab() {
   const [sub, setSub] = useState<Subscription | null>(null)
   const [logCount, setLogCount] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
 
+  // Load cached data immediately, then fetch fresh info from the server.
   useEffect(() => {
     Promise.all([
       storage.local.get("subscription"),
@@ -1282,37 +1286,74 @@ function TrialTab() {
       .then(([s, log]) => {
         setSub(s)
         setLogCount(log.length)
+        // Fetch live data from Supabase if we have a license key
+        if (s?.licenseKey) fetchLive(s)
       })
       .catch(() => {})
   }, [])
+
+  const fetchLive = async (cached: Subscription) => {
+    setRefreshing(true)
+    try {
+      const res = await fetch(VALIDATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ licenseKey: cached.licenseKey }),
+      })
+      if (!res.ok) return
+      const data = await res.json() as {
+        status: string
+        daysLeft: number | null
+        trialEndsAt: string | null
+        currentPeriodEndsAt: string | null
+        email: string
+      }
+      const updated: Subscription = {
+        ...cached,
+        status: data.status as Subscription["status"],
+        daysLeft: data.daysLeft,
+        trialEndsAt: data.trialEndsAt,
+        lastValidatedAt: new Date().toISOString(),
+        ...(data.email && { email: data.email }),
+      }
+      await storage.local.set("subscription", updated)
+      setSub(updated)
+    } catch {
+      // Server unreachable — cached data is fine
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   if (!sub) {
     return (
       <EmptyState
         icon={<HourglassIcon size={36} color="var(--color-text-muted)" />}
-        text="Trial information not available yet."
+        text="No account found. Please reinstall to set up a new account."
       />
     )
   }
 
-  const MS_PER_DAY = 86_400_000
-  const trialEndsMs =
-    new Date(sub.installedAt).getTime() + TRIAL_DAYS * MS_PER_DAY
-  const graceEndsMs = new Date(sub.graceEndsAt).getTime()
-  const nowMs = Date.now()
-
-  let daysLeft = 0
-  if (sub.status === "trial") {
-    daysLeft = Math.max(0, Math.ceil((trialEndsMs - nowMs) / MS_PER_DAY))
-  } else if (sub.status === "grace") {
-    daysLeft = Math.max(0, Math.ceil((graceEndsMs - nowMs) / MS_PER_DAY))
-  }
-
+  // daysLeft comes from the server after the first 24h validation.
+  // Before that, compute it locally from trialEndsAt so it shows correctly immediately.
+  const daysLeft = sub.daysLeft ??
+    (sub.trialEndsAt
+      ? Math.max(0, Math.ceil((new Date(sub.trialEndsAt).getTime() - Date.now()) / 86_400_000))
+      : 0)
   const st = STATUS_STYLE[sub.status] ?? STATUS_STYLE["trial"]!
+
+  const storeSlug = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID ?? ""
+  const monthlyId = import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
+  const yearlyId = import.meta.env.VITE_LEMON_SQUEEZY_YEARLY_VARIANT_ID ?? ""
+  const emailParam = sub.email
+    ? `&checkout[custom][email]=${encodeURIComponent(sub.email)}`
+    : ""
+  const monthlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${monthlyId}?${emailParam}`
+  const yearlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${yearlyId}?${emailParam}`
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Status badge */}
+      {/* Status badge + refresh */}
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         <span
           style={{
@@ -1326,13 +1367,31 @@ function TrialTab() {
         >
           {st.label}
         </span>
-        {sub.status !== "expired" && (
-          <span
-            style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}
-          >
+        {(sub.status === "trial" || sub.status === "grace") && (
+          <span style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
             {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
           </span>
         )}
+        <button
+          onClick={() => fetchLive(sub)}
+          disabled={refreshing}
+          title="Refresh from server"
+          style={{
+            marginLeft: "auto",
+            background: "none",
+            border: "none",
+            cursor: refreshing ? "default" : "pointer",
+            color: "var(--color-text-muted)",
+            fontSize: "0.8rem",
+            opacity: refreshing ? 0.5 : 1,
+            padding: "0.2rem 0.4rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.3rem",
+          }}
+        >
+          {refreshing ? "Checking…" : "↻ Refresh"}
+        </button>
       </div>
 
       {/* Stats */}
@@ -1343,47 +1402,80 @@ function TrialTab() {
           gap: "0.75rem",
         }}
       >
-        <StatCard
-          label="Installed"
-          value={new Date(sub.installedAt).toLocaleDateString()}
-        />
+        {sub.email && <StatCard label="Account" value={sub.email} />}
         <StatCard label="Pages visited" value={String(logCount)} />
-        <StatCard
-          label="Trial ends"
-          value={new Date(trialEndsMs).toLocaleDateString()}
-        />
-        <StatCard
-          label="Grace ends"
-          value={new Date(graceEndsMs).toLocaleDateString()}
-        />
+        {sub.trialEndsAt && (
+          <StatCard
+            label="Trial ends"
+            value={new Date(sub.trialEndsAt).toLocaleDateString()}
+          />
+        )}
+        {sub.lastValidatedAt && (
+          <StatCard
+            label="Last checked"
+            value={new Date(sub.lastValidatedAt).toLocaleDateString()}
+          />
+        )}
       </div>
 
-      {/* CTA placeholder */}
-      <div
-        style={{
-          padding: "1.2rem",
-          borderRadius: 12,
-          background: "var(--color-surface)",
-          border: "1.5px solid var(--color-surface-edge)",
-          textAlign: "center" as const,
-        }}
-      >
+      {/* Subscribe CTA */}
+      {monthlyId && (sub.status === "trial" || sub.status === "grace" || sub.status === "expired") && (
         <div
           style={{
-            marginBottom: "0.5rem",
+            padding: "1.2rem",
+            borderRadius: 12,
+            background: "var(--color-surface)",
+            border: "1.5px solid var(--color-surface-edge)",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
+            gap: "0.6rem",
           }}
         >
-          <CreditCardIcon size={28} color="var(--color-text-muted)" />
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.25rem" }}>
+            <CreditCardIcon size={28} color="var(--color-text-muted)" />
+          </div>
+          <div style={{ fontWeight: 700, textAlign: "center" as const }}>
+            Subscribe to keep using SeniorWeb
+          </div>
+          <a
+            href={yearlyUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "block",
+              padding: "0.75rem",
+              background: "var(--color-accent)",
+              color: "#fff",
+              borderRadius: "var(--radius-md)",
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              textDecoration: "none",
+              textAlign: "center" as const,
+            }}
+          >
+            $39.99 / year (best value)
+          </a>
+          <a
+            href={monthlyUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "block",
+              padding: "0.65rem",
+              background: "transparent",
+              color: "var(--color-text-muted)",
+              border: "1.5px solid var(--color-surface-edge)",
+              borderRadius: "var(--radius-md)",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              textDecoration: "none",
+              textAlign: "center" as const,
+            }}
+          >
+            $4.99 / month
+          </a>
         </div>
-        <div style={{ fontWeight: 700, marginBottom: "0.3rem" }}>
-          Full version coming soon
-        </div>
-        <div style={{ fontSize: "0.875rem", color: "var(--color-text-muted)" }}>
-          Subscription management will be available in a future update.
-        </div>
-      </div>
+      )}
     </div>
   )
 }

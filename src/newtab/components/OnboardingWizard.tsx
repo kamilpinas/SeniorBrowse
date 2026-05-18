@@ -5,6 +5,7 @@ import { useState } from "react"
 import {
   ArrowRightIcon,
   ConfettiIcon,
+  EnvelopeIcon,
   HandIcon,
   MapPinIcon,
   NewspaperIcon,
@@ -14,7 +15,9 @@ import {
   XIcon,
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
-import type { SuspiciousLinkMode } from "@shared/types"
+import type { Subscription, SuspiciousLinkMode } from "@shared/types"
+
+const REGISTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-license`
 
 interface Props {
   onComplete: () => void
@@ -243,7 +246,114 @@ function StepWelcome({
   )
 }
 
-// Step 1: Names
+// Step 1: Email — registers / recovers the license on the server
+function StepEmail({ onNext }: { onNext: (email: string) => void }) {
+  const [email, setEmail] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleSubmit = async () => {
+    setError("")
+    const trimmed = email.trim().toLowerCase()
+    if (!trimmed || !trimmed.includes("@")) {
+      setError("Please enter a valid email address.")
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch(REGISTER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      })
+      const data = await res.json() as {
+        licenseKey?: string
+        status?: string
+        trialEndsAt?: string
+        error?: string
+      }
+      if (!res.ok) {
+        if (res.status === 403) {
+          setError(
+            "This email's free trial has already been used. Please subscribe at easysurf.app to continue.",
+          )
+        } else {
+          setError(data.error ?? "Something went wrong. Please try again.")
+        }
+        return
+      }
+      const trialEndsAt = data.trialEndsAt ?? null
+      const daysLeft = trialEndsAt
+        ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000))
+        : null
+      const sub: Subscription = {
+        status: (data.status ?? "trial") as Subscription["status"],
+        licenseKey: data.licenseKey!,
+        email: trimmed,
+        trialEndsAt,
+        lastValidatedAt: null,
+        daysLeft,
+      }
+      await storage.local.set("subscription", sub)
+      onNext(trimmed)
+    } catch {
+      setError("Network error. Please check your connection and try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <div style={{ textAlign: "center" as const, color: "var(--color-accent)" }}>
+        <EnvelopeIcon size={48} weight="fill" />
+      </div>
+      <div>
+        <h2 style={heading}>Start your free 7-day trial</h2>
+        <p style={{ ...body, marginTop: "0.5rem" }}>
+          Enter your email to create your account. No credit card needed now.
+        </p>
+      </div>
+      <Field label="Your email address">
+        <input
+          type="email"
+          value={email}
+          placeholder="e.g. magda@example.com"
+          style={inputStyle}
+          autoFocus
+          onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void handleSubmit()
+          }}
+        />
+      </Field>
+      {error && (
+        <p style={{ margin: 0, color: "#c0392b", fontSize: "0.875rem" }}>
+          {error}
+        </p>
+      )}
+      <button
+        style={{ ...primaryBtn, opacity: loading ? 0.7 : 1 }}
+        onClick={() => void handleSubmit()}
+        disabled={loading}
+        onMouseEnter={(e) => {
+          if (!loading) {
+            e.currentTarget.style.background = "var(--color-accent-strong)"
+            e.currentTarget.style.transform = "scale(1.02)"
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--color-accent)"
+          e.currentTarget.style.transform = "scale(1)"
+        }}
+      >
+        {loading ? "Checking…" : <>Continue <ArrowRightIcon size={18} /></>}
+      </button>
+    </>
+  )
+}
+
+// Step 2: Names
 function StepNames({
   onNext,
 }: {
@@ -698,7 +808,7 @@ function StepHandover({
 
 // ── Wizard container ─────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 6
 
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(0)
@@ -712,16 +822,21 @@ export function OnboardingWizard({ onComplete }: Props) {
     onComplete()
   }
 
-  const handleStep1 = async (senior: string, caregiver: string) => {
+  // step 1 → 2: email registered
+  const handleStep1 = (_email: string) => setStep(2)
+
+  // step 2 → 3: names saved
+  const handleStep2 = async (senior: string, caregiver: string) => {
     setSeniorName(senior)
     await storage.local.update("config", {
       seniorName: senior,
       caregiverName: caregiver,
     })
-    setStep(2)
+    setStep(3)
   }
 
-  const handleStep2 = async (shortcuts: PendingShortcut[]) => {
+  // step 3 → 4: shortcuts saved
+  const handleStep3 = async (shortcuts: PendingShortcut[]) => {
     if (shortcuts.length > 0) {
       const existing = await storage.local.get("shortcuts")
       const startPos = existing.length
@@ -735,16 +850,17 @@ export function OnboardingWizard({ onComplete }: Props) {
       }))
       await storage.local.set("shortcuts", [...existing, ...newShortcuts])
     }
-    setStep(3)
+    setStep(4)
   }
 
-  const handleStep3 = async (sec: {
+  // step 4 → 5: security saved
+  const handleStep4 = async (sec: {
     blockDownloads: boolean
     blockAds: boolean
     blockSuspiciousLinks: SuspiciousLinkMode
   }) => {
     await storage.local.update("config", { security: sec })
-    setStep(4)
+    setStep(5)
   }
 
   const handleDone = async () => {
@@ -779,10 +895,11 @@ export function OnboardingWizard({ onComplete }: Props) {
         {step === 0 && (
           <StepWelcome onNext={() => setStep(1)} onSkip={handleSkip} />
         )}
-        {step === 1 && <StepNames onNext={handleStep1} />}
-        {step === 2 && <StepShortcuts onNext={handleStep2} />}
-        {step === 3 && <StepSecurity onNext={handleStep3} />}
-        {step === 4 && (
+        {step === 1 && <StepEmail onNext={handleStep1} />}
+        {step === 2 && <StepNames onNext={handleStep2} />}
+        {step === 3 && <StepShortcuts onNext={handleStep3} />}
+        {step === 4 && <StepSecurity onNext={handleStep4} />}
+        {step === 5 && (
           <StepHandover
             seniorName={seniorName}
             onDone={handleDone}

@@ -33,6 +33,7 @@ export function App() {
 
   const [seniorName, setSeniorName] = useState("")
   const [caregiverName, setCaregiverName] = useState("")
+  const [accountEmail, setAccountEmail] = useState("")
   const [showSettings, setShowSettings] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
   const [showTour, setShowTour] = useState(false)
@@ -59,6 +60,7 @@ export function App() {
         // U-02: expired guard — hide all content from the senior
         if (sub?.status === "expired") {
           setIsExpired(true)
+          if (sub.email) setAccountEmail(sub.email)
           setReady(true)
           return
         }
@@ -120,8 +122,17 @@ export function App() {
     setReady(true)
   }
 
-  // U-02: expired screen — no jargon, no "trial" or "subscription" words
+  // U-02: expired screen — senior sees "needs attention"; caregiver sees subscribe options
   if (ready && isExpired) {
+    const emailParam = accountEmail
+      ? `&checkout[custom][email]=${encodeURIComponent(accountEmail)}`
+      : ""
+    const storeSlug = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID ?? ""
+    const monthlyId = import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
+    const yearlyId = import.meta.env.VITE_LEMON_SQUEEZY_YEARLY_VARIANT_ID ?? ""
+    const monthlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${monthlyId}?${emailParam}`
+    const yearlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${yearlyId}?${emailParam}`
+
     return (
       <main
         style={{
@@ -136,35 +147,89 @@ export function App() {
         <div
           style={{
             textAlign: "center" as const,
-            maxWidth: 480,
+            maxWidth: 520,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "1.25rem",
+            gap: "1.5rem",
           }}
         >
           <GearIcon size={48} color="var(--color-text-muted)" />
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "var(--color-text)",
-              margin: 0,
-            }}
-          >
-            SeniorWeb needs attention
-          </h1>
-          <p
-            style={{
-              fontSize: "1.5rem",
-              color: "var(--color-text-muted)",
-              margin: 0,
-              lineHeight: 1.6,
-            }}
-          >
-            Please ask{caregiverName ? ` ${caregiverName}` : " your caregiver"}{" "}
-            to take a look.
-          </p>
+          <div>
+            <h1
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "var(--color-text)",
+                margin: 0,
+              }}
+            >
+              SeniorWeb needs attention
+            </h1>
+            <p
+              style={{
+                fontSize: "1rem",
+                color: "var(--color-text-muted)",
+                margin: "0.5rem 0 0",
+                lineHeight: 1.6,
+              }}
+            >
+              The free trial has ended. Please ask{" "}
+              {caregiverName ? caregiverName : "your caregiver"} to subscribe
+              to keep using SeniorWeb.
+            </p>
+          </div>
+
+          {/* Subscribe options — visible only to the caregiver who knows what they mean */}
+          {monthlyId && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.75rem",
+                width: "100%",
+                maxWidth: 360,
+              }}
+            >
+              <a
+                href={yearlyUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "block",
+                  padding: "0.9rem 1.5rem",
+                  background: "var(--color-accent)",
+                  color: "#fff",
+                  borderRadius: "var(--radius-md)",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  textDecoration: "none",
+                  textAlign: "center" as const,
+                }}
+              >
+                Subscribe — $39.99 / year
+              </a>
+              <a
+                href={monthlyUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "block",
+                  padding: "0.75rem 1.5rem",
+                  background: "transparent",
+                  color: "var(--color-text-muted)",
+                  border: "1.5px solid var(--color-surface-edge)",
+                  borderRadius: "var(--radius-md)",
+                  fontWeight: 600,
+                  fontSize: "0.95rem",
+                  textDecoration: "none",
+                  textAlign: "center" as const,
+                }}
+              >
+                Monthly — $4.99 / month
+              </a>
+            </div>
+          )}
         </div>
       </main>
     )
