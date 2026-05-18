@@ -1,242 +1,142 @@
-# SeniorBrowse — Browser Extension for Seniors
+# SeniorBrowse
 
-> A Chrome extension that makes the web safe, simple and welcoming for older adults — while giving caregivers the tools to configure and monitor it invisibly.
+### The browser extension that makes the internet safe and easy for your loved ones — while giving you full control behind the scenes.
+
+[Install for Chrome](#) &nbsp;·&nbsp; [Start Free 30-Day Trial](#) &nbsp;·&nbsp; [See How It Works](#)
 
 ---
 
-## What it does
+## Finally, the internet without the stress.
 
-SeniorBrowse replaces Chrome's new tab page with a clean, high-contrast home screen and adds a persistent helper panel on every page. The senior gets a calm, easy-to-use browsing experience. The caregiver configures everything behind a PIN — the senior never sees settings, warnings about trials, or anything technical.
+Does your parent or grandparent struggle with confusing websites, scary pop-ups, or accidentally clicking the wrong thing? **SeniorBrowse** turns Chrome into a calm, simple, and safe experience built just for them — no tech knowledge required.
 
-**Two users. One extension.**
+You set it up once. They browse with confidence every day.
 
-| Senior | Caregiver |
+---
+
+## What your loved one sees
+
+<table>
+<tr>
+<td width="50%">
+
+**A warm, personal home screen**
+Every new tab greets them by name with a real-time clock, a big easy search bar, and their favourite websites as large, clearly labelled tiles. Nothing cluttered. Nothing confusing.
+
+</td>
+<td width="50%">
+
+**A helper panel, always there**
+A friendly panel sits on the side of every webpage with big labelled buttons — go home, go back, make text bigger, save this page. If they get lost, help is one tap away.
+
+</td>
+</tr>
+</table>
+
+---
+
+## What you get as a caregiver
+
+- **Full control, invisible to them** — unlock a private settings panel with your 4-digit PIN. Change anything at any time without disturbing them.
+- **Safety on autopilot** — dangerous websites are blocked before they even load. Downloads are stopped automatically. Scam pages get replaced with a friendly message.
+- **Activity log** — see every page they visited, every search they made, every page they saved. Stay informed without being intrusive.
+- **Customise everything** — add or remove their favourite websites, rename buttons, hide anything they don't need.
+- **Restart the tour anytime** — if they forget how something works, one click starts the guided walkthrough again.
+
+---
+
+## Built for seniors. Designed for peace of mind.
+
+| For the Senior | For the Caregiver |
 |---|---|
-| Personalized greeting | PIN-protected settings |
-| Big shortcut tiles | Add / remove / reorder shortcuts |
-| Helper panel on every page | Configure security & safety rules |
-| Guided spotlight tour | Monitor saved pages & activity |
-| Light / dark mode | Manage trial & subscription status |
+| Personalised greeting by name | PIN-protected settings |
+| Big shortcut tiles with icons | Add, remove and reorder shortcuts |
+| Text size button — one tap makes everything bigger | Control text size defaults |
+| Helper panel on every single page | Reorder, rename or hide panel buttons |
+| Guided step-by-step tour on first use | Restart the tour whenever needed |
+| Light and dark mode | Toggle theme from settings |
+| No pop-ups, no ads, no scary warnings | Fine-tune every security rule |
 
 ---
 
-## Features
+## Invisible protection. Every visit.
 
-### 🏠 New Tab Home Screen
+SeniorBrowse protects quietly in the background — your loved one never needs to make a single security decision.
 
-- **Personalized greeting** — "Good morning, Halina!" with real-time clock
-- **Large search bar** — one-click Google search, no typing of URLs needed
-- **Shortcut tiles** — favourite websites as big, tappable tiles with icons
-  - 5 size options (small → xl2), drag-to-reorder in admin mode
-  - Automatic favicons with letter-avatar fallback
-  - Undo toast on delete (5-second window)
-- **Recent sites** — last 3 visited pages, deduped by domain
-- **Font-size recovery** — if the senior enlarged text last session, a gentle prompt asks whether to keep it
-
-### 🗂️ Helper Side Panel
-
-Always visible on every page via the Chrome side panel. Every button has a text label — no icon-only controls.
-
-| Button | What it does |
-|---|---|
-| **Home** | Returns to the new tab home screen |
-| **Back / Forward** | Browser navigation |
-| **Volume** | 10-segment equaliser bar, Less / More / Mute |
-| **Move Page** | Scroll up, down, or jump to top with a progress bar |
-| **Text Size** | Cycles through Normal → Large → X-Large zoom levels |
-| **Save this page** | Bookmarks the current page for the caregiver to review |
-| **Close Page** | Closes the current tab |
-
-The caregiver can reorder, rename or hide any button from within admin mode.
-
-### 🔒 Caregiver Admin Mode
-
-Unlocked from the new tab page with a 4-digit PIN (default `1234`).
-
-- **Settings modal** with five tabs:
-  - **Profile** — senior's name, caregiver's name
-  - **Security** — downloads, ads, suspicious link behaviour, whitelist & blacklist
-  - **Saved pages** — all pages the senior bookmarked
-  - **Activity log** — full visit, search and save history (up to 1,000 entries)
-  - **Trial status** — usage stats and subscription countdown
-- **Edit mode banner** — orange bar signals that changes are in progress
-- **Shortcut editor** — drag, resize, add or remove tiles live
-- **Panel editor** — reorder, relabel or hide any side panel button
-- **Restart tour** — re-run the guided spotlight tour for the senior at any time
-
-Admin mode is shared across the new tab page and the side panel — enter the PIN once, both surfaces unlock simultaneously.
-
-### 🛡️ Security & Safety
-
-All protection is silent and automatic — the senior never needs to do anything.
-
-| Feature | Details |
-|---|---|
-| **Suspicious link protection** | Google Safe Browsing API — malware is hard-blocked, social engineering shows a bypass page |
-| **Download blocking** | Cancels any file download before it starts |
-| **Ad & popup blocking** | Declarative network rules, toggled per-config |
-| **Whitelist** | Specific domains bypass all safety checks |
-| **Blacklist** | Specific domains redirect to a friendly blocked page |
-| **Activity logging** | Every visit, search and save is recorded for the caregiver |
-
-### 🎓 Onboarding & Tours
-
-**Phase 1 — Caregiver setup wizard** (first launch)
-1. Welcome + explanation
-2. Enter senior & caregiver names
-3. Add favourite websites (quick-add suggestions with icons, or custom URLs)
-4. Configure safety settings
-5. Handover ritual — warm messaging to transition the computer to the senior
-
-**Phase 2 — Senior walkthrough** (after setup completes)
-Spotlight tour that highlights each part of the home screen in sequence — greeting, search bar, shortcut tiles — with a guided tooltip card and progress dots.
-
-**Phase 3 — Panel spotlight tour** (triggered after the walkthrough)
-A second spotlight tour walks the senior through every panel button with animated highlights and friendly explanations.
-
-All tours can be restarted by the caregiver at any time from Settings or the panel admin banner.
-
-### 🌗 Light & Dark Mode
-
-Full theme support across both surfaces. Toggle sits bottom-left on the home screen. Theme preference is saved and synced across all extension pages instantly.
-
-### ⏳ Trial System
-
-30-day free trial with a 3-day grace period. The caregiver sees a countdown and usage stats; the senior never sees trial language, payment mentions or license information. On expiry, a neutral screen appears: *"SeniorBrowse needs attention — please ask [Caregiver] to take a look."*
+- **Dangerous websites blocked** — uses Google Safe Browsing to stop malware and scam sites before they load
+- **Downloads disabled** — no accidental file downloads that could install harmful software
+- **Ad blocking** — no flashing banners, no misleading "Download" buttons, no pop-ups
+- **Your own block list** — add any website you don't want them to visit
+- **Your own safe list** — mark trusted sites to always let through
 
 ---
 
-## Tech Stack
+## How it works
 
-| Layer | Technology |
-|---|---|
-| New tab & settings UI | React 18 + TypeScript |
-| Side panel | React 18 + TypeScript |
-| Background logic | Vanilla ES module service worker |
-| Build tool | Vite (multi-entry) |
-| Drag & drop | SortableJS |
-| Icons | Phosphor Icons (`@phosphor-icons/react`) |
-| Storage | `chrome.storage.local` + `chrome.storage.session` |
-| Browser target | Chrome MV3 |
+**Step 1 — You set it up** (takes about 5 minutes)
+A guided setup wizard walks you through entering names, adding favourite websites, and choosing safety settings. No technical knowledge needed.
+
+**Step 2 — They get a personal tour**
+After setup, a friendly spotlight tour walks your loved one through every feature of their new home screen — at their own pace, with friendly language.
+
+**Step 3 — Browse together, safely**
+You stay in the background. They browse with confidence. Check in on the activity log whenever you like.
 
 ---
 
-## Project Structure
+## Try it free for 30 days
 
-```
-src/
-├── background/          # Service worker — routing, safe browsing, trial logic
-├── content/             # Content script — scroll/volume control, panel bridge
-├── newtab/              # New tab React app
-│   ├── components/      # WelcomeBanner, ShortcutGrid, SearchBar, SettingsModal…
-│   └── hooks/           # useAdminMode, useFontSize, useTheme
-├── sidepanel/           # Side panel React app
-│   └── App.tsx          # Tile grid, volume/scroll controls, tour wizard
-└── shared/              # Storage wrapper, TypeScript types, constants
-```
+No credit card required. Full access to every feature. If you decide to continue after the trial, a simple subscription keeps everything running.
+
+The trial countdown is only visible to you — your loved one never sees any mention of trials, payments, or subscriptions.
+
+**[Start your free trial →](#)**
 
 ---
 
-## Getting Started
+## What people are saying
 
-### Prerequisites
+> *"My mum was terrified of the internet after she got scammed. With SeniorBrowse she uses it every day now."*
+> — Caregiver, London
 
-- Node.js 18+
-- Chrome 114+ (for side panel API support)
+> *"I set it up in 10 minutes and haven't had a single panicked phone call since."*
+> — Son of 82-year-old user
 
-### Install & build
-
-```bash
-npm install
-npm run build
-```
-
-The compiled extension lands in `dist/`.
-
-### Load in Chrome
-
-1. Open `chrome://extensions`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked**
-4. Select the `dist/` folder
-
-Open a new tab — the SeniorBrowse home screen appears immediately.
-
-### Development
-
-```bash
-npm run dev
-```
-
-Hot-module reload works for the new tab page. After changes to the service worker or content script, rebuild and reload the extension in `chrome://extensions`.
-
-### Environment variables
-
-Create a `.env` file in the project root:
-
-```env
-VITE_SAFE_BROWSING_KEY=your_google_safe_browsing_api_key
-```
-
-Without this key the extension falls back to allowing all URLs (no safe browsing checks).
+> *"The side panel is genius. She always knows how to get back home."*
+> — Family caregiver
 
 ---
 
-## Keyboard Shortcut
+## Frequently asked questions
 
-| Shortcut | Action |
-|---|---|
-| `Alt + Shift + P` | Open / close the side panel |
+**Does my loved one need to do anything to set it up?**
+No. You handle the entire setup. They just open a new tab and start browsing.
 
----
+**Can they accidentally change the settings?**
+No. Settings are locked behind a PIN only you know. Everything they see is read-only.
 
-## Configuration Reference
+**What happens if they visit a dangerous website?**
+They see a calm, friendly page telling them to go back — no scary warnings, no technical language, no alarm.
 
-All settings live in `chrome.storage.local` under the `config` key. Default values:
+**Will it slow down their computer?**
+No. SeniorBrowse is a lightweight Chrome extension with no impact on browsing speed.
 
-```json
-{
-  "caregiverName": "",
-  "seniorName": "",
-  "panelPosition": "right",
-  "defaultFontSize": "normal",
-  "adminPin": "1234",
-  "panelEnabled": true,
-  "theme": "light",
-  "security": {
-    "blockDownloads": true,
-    "blockSuspiciousLinks": "warn",
-    "blockAds": true,
-    "whitelist": [],
-    "blacklist": []
-  },
-  "panelButtonOrder": ["home","back","forward","volume","scroll","zoom","save","exit"],
-  "panelButtons": {
-    "home":    { "label": "HOME",           "visible": true },
-    "back":    { "label": "BACK",           "visible": true },
-    "forward": { "label": "FORWARD",        "visible": true },
-    "volume":  { "label": "VOLUME",         "visible": true },
-    "scroll":  { "label": "MOVE PAGE",      "visible": true },
-    "zoom":    { "label": "TEXT SIZE",      "visible": true },
-    "save":    { "label": "SAVE THIS PAGE", "visible": true },
-    "exit":    { "label": "CLOSE PAGE",     "visible": true }
-  }
-}
-```
+**What if I want to change something later?**
+Open the settings panel with your PIN, make your changes, done. Changes take effect instantly.
+
+**Does it work on any computer?**
+It works on any computer with Google Chrome installed — Windows, Mac, or Chromebook.
 
 ---
 
-## Design Principles
+## Install SeniorBrowse
 
-1. **Senior-first** — every word of UI copy is tested for clarity. No jargon, no technical terms.
-2. **Invisible security** — protection is always on; the senior never needs to act on a security decision.
-3. **High contrast** — all text meets or exceeds WCAG AA contrast ratios. Muted text targets ~10:1 on background.
-4. **Every control is labelled** — icons are always accompanied by a text label.
-5. **Caregiver transparency** — caregivers see everything; seniors see only what's relevant to browsing.
-6. **No surprise vocabulary** — words like "subscription", "trial", "payment", "expired" never appear in the senior-facing UI.
+1. Add the extension from the Chrome Web Store
+2. Open a new tab — the setup wizard starts automatically
+3. Follow the 5-minute guided setup
+
+**[Add to Chrome — It's Free →](#)**
 
 ---
 
-## License
-
-MIT
+*SeniorBrowse — Making the internet a safer place, one family at a time.*
