@@ -8,7 +8,7 @@ import type { IncomingMessage, MessageResponse } from "@shared/messages"
 import { checkUrl } from "./safetyCheck"
 import { handleDownload } from "./downloadBlocker"
 import { logActivity } from "./activityLogger"
-import { ensureTrialStatus } from "./trialManager"
+import { ensureTrialStatus } from "./licenseManager"
 import { updateAdBlocking } from "./adBlocker"
 
 // ── Install / update ───────────────────────────────────────────────────────
@@ -146,6 +146,10 @@ async function handleMessage(msg: IncomingMessage): Promise<MessageResponse> {
         }
         return { ok: true, data: undefined }
       }
+
+      case "OPEN_SIDE_PANEL":
+        // Handled by the dedicated listener above that has access to sender.tab.
+        return { ok: true, data: undefined }
 
       default: {
         // TypeScript exhaustiveness guard.
