@@ -86,6 +86,7 @@ interface TileProps {
   variant?: "default" | "primary" | "danger"
   fullWidth?: boolean
   tourTarget?: string
+  labelFontSize?: string
 }
 
 function Tile({
@@ -97,6 +98,7 @@ function Tile({
   variant = "default",
   fullWidth = false,
   tourTarget,
+  labelFontSize = "1.5rem",
 }: TileProps) {
   const [hov, setHov] = useState(false)
   const [pressed, setPressed] = useState(false)
@@ -187,7 +189,7 @@ function Tile({
         {fullWidth && (
           <span
             style={{
-              fontSize: "1.5rem",
+              fontSize: labelFontSize,
               fontWeight: 700,
               letterSpacing: "0.01em",
               lineHeight: 1.2,
@@ -202,7 +204,7 @@ function Tile({
       {!fullWidth && (
         <span
           style={{
-            fontSize: "1.5rem",
+            fontSize: labelFontSize,
             fontWeight: 700,
             letterSpacing: "0.01em",
             lineHeight: 1.2,
@@ -877,7 +879,7 @@ const PANEL_TOUR_STEPS: PanelTourStep[] = [
     target: "fullscreen",
     icon: <ArrowsOutIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
     title: "Full Screen",
-    body: "FULL SCREEN makes the page fill the whole display — great for reading or watching videos. Tap SHRINK to bring everything back.",
+    body: "FULLSCREEN makes the page fill the whole display — great for reading or watching videos. Tap SHRINK to bring everything back.",
   },
   {
     target: "refresh",
@@ -1108,7 +1110,7 @@ function PanelTourCard({
 
 // ── Panel wizard — spotlight overlay via createPortal ─────────────────────────
 
-function PanelWizard({ onDone }: { onDone: () => void }) {
+function PanelWizard({ onDone, onSkip }: { onDone: () => void; onSkip: () => void }) {
   const [step, setStep] = useState(0)
   const [spotRect, setSpotRect] = useState<DOMRect | null>(null)
   const [cardH, setCardH] = useState(PANEL_CARD_H_EST)
@@ -1173,7 +1175,7 @@ function PanelWizard({ onDone }: { onDone: () => void }) {
           isLast={isLast}
           onBack={goBack}
           onNext={goNext}
-          onSkip={onDone}
+          onSkip={onSkip}
           style={{ width: "100%", maxWidth: PANEL_CARD_W }}
         />
       </div>,
@@ -1245,7 +1247,7 @@ function PanelWizard({ onDone }: { onDone: () => void }) {
         isLast={isLast}
         onBack={goBack}
         onNext={goNext}
-        onSkip={onDone}
+        onSkip={onSkip}
         arrowSide={showAbove ? "bottom" : "top"}
         arrowLeft={arrowLeft}
         style={{
@@ -1284,6 +1286,10 @@ export function App() {
   const caregiverName = useRef("")
   const listRef = useRef<HTMLDivElement>(null)
   const sortableRef = useRef<Sortable | null>(null)
+  // Once the panel wizard is dismissed (skip or complete) we never show it
+  // again in this session — even if a concurrent config write fires onChanged
+  // before panelWizardDone:true has landed in storage.
+  const panelWizardDismissed = useRef(false)
 
   // ── Load ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1298,7 +1304,7 @@ export function App() {
         setAdminMode(!!isAdmin)
         // Only show panel wizard AFTER the newtab onboarding is done.
         // panelWizardDone guards against showing it a second time.
-        if (config.onboardingDone && !config.panelWizardDone)
+        if (config.onboardingDone && !config.panelWizardDone && !panelWizardDismissed.current)
           setShowPanelWizard(true)
         const savedOrder = config.panelButtonOrder?.length
           ? config.panelButtonOrder
@@ -1391,7 +1397,7 @@ export function App() {
       const cfg = changes["config"]?.newValue as
         | { onboardingDone?: boolean; panelWizardDone?: boolean }
         | undefined
-      if (cfg?.onboardingDone && !cfg?.panelWizardDone) {
+      if (cfg?.onboardingDone && !cfg?.panelWizardDone && !panelWizardDismissed.current) {
         setShowPanelWizard(true)
       }
     }
@@ -1850,10 +1856,8 @@ export function App() {
                   <Tile
                     key={id}
                     id={id}
-                    label={label(
-                      "fullscreen",
-                      isFullscreen ? "SHRINK" : "FULL SCREEN",
-                    )}
+                    label={isFullscreen ? "SHRINK" : label("fullscreen", "FULLSCREEN")}
+                    labelFontSize="1.4rem"
                     icon={
                       isFullscreen ? (
                         <ArrowsInIcon size={28} weight="bold" />
@@ -1908,9 +1912,20 @@ export function App() {
       {showPanelWizard && (
         <PanelWizard
           onDone={() => {
+            panelWizardDismissed.current = true
             setShowPanelWizard(false)
             void storage.local.update("config", { panelWizardDone: true })
             // Hand off to the newtab — start the senior walkthrough there next.
+            chrome.storage.session
+              .set({ seniorTourPending: true })
+              .catch(() => {})
+          }}
+          onSkip={() => {
+            // Dismissed early — mark done and still hand off to the homescreen
+            // senior walkthrough so it always runs regardless of skip/complete.
+            panelWizardDismissed.current = true
+            setShowPanelWizard(false)
+            void storage.local.update("config", { panelWizardDone: true })
             chrome.storage.session
               .set({ seniorTourPending: true })
               .catch(() => {})

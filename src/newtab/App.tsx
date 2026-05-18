@@ -3,8 +3,8 @@ import { useEffect, useState } from "react"
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  GearIcon,
   HandWavingIcon,
+  HeartIcon,
   ListIcon,
   LockSimpleIcon,
   MoonIcon,
@@ -128,7 +128,8 @@ export function App() {
       ? `&checkout[custom][email]=${encodeURIComponent(accountEmail)}`
       : ""
     const storeSlug = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID ?? ""
-    const monthlyId = import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
+    const monthlyId =
+      import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
     const yearlyId = import.meta.env.VITE_LEMON_SQUEEZY_YEARLY_VARIANT_ID ?? ""
     const monthlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${monthlyId}?${emailParam}`
     const yearlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${yearlyId}?${emailParam}`
@@ -151,46 +152,90 @@ export function App() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "1.5rem",
+            gap: "1.75rem",
           }}
         >
-          <GearIcon size={48} color="var(--color-text-muted)" />
+          {/* Warm icon — nothing technical or alarming */}
+          <HeartIcon size={56} weight="fill" color="var(--color-accent)" />
+
+          {/* Senior-facing message — reassuring, no technical detail */}
           <div>
             <h1
               style={{
-                fontSize: "1.5rem",
-                fontWeight: 700,
+                fontSize: "1.6rem",
+                fontWeight: 800,
                 color: "var(--color-text)",
-                margin: 0,
+                margin: "0 0 0.6rem",
+                lineHeight: 1.25,
               }}
             >
-              SeniorWeb needs attention
+              Just a short pause
             </h1>
             <p
               style={{
-                fontSize: "1rem",
+                fontSize: "1.05rem",
                 color: "var(--color-text-muted)",
-                margin: "0.5rem 0 0",
-                lineHeight: 1.6,
+                margin: 0,
+                lineHeight: 1.7,
+                maxWidth: 420,
               }}
             >
-              The free trial has ended. Please ask{" "}
-              {caregiverName ? caregiverName : "your caregiver"} to subscribe
-              to keep using SeniorWeb.
+              Everything is perfectly fine — your favourites and settings are
+              all safe!{" "}
+              <strong style={{ color: "var(--color-text)" }}>
+                {caregiverName || "Your caregiver"}
+              </strong>{" "}
+              will take care of a quick renewal and you'll be back in no time.
             </p>
           </div>
 
-          {/* Subscribe options — visible only to the caregiver who knows what they mean */}
+          {/* Caregiver-only section — labelled so seniors don't worry about it */}
           {monthlyId && (
             <div
               style={{
+                width: "100%",
+                maxWidth: 360,
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.75rem",
-                width: "100%",
-                maxWidth: 360,
               }}
             >
+              {/* Subtle "for caregiver" divider */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--color-surface-edge)",
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "var(--color-text-subtle)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  For {caregiverName || "the caregiver"}
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--color-surface-edge)",
+                  }}
+                />
+              </div>
+
               <a
                 href={yearlyUrl}
                 target="_blank"
@@ -488,7 +533,7 @@ export function App() {
             b.style.color = "var(--color-text-muted)"
           }}
         >
-          <LockSimpleIcon size={16} /> For carers
+          <LockSimpleIcon size={16} /> Edit mode
         </button>
       )}
 

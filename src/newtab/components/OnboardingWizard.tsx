@@ -17,7 +17,11 @@ import {
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
 import { SHORTCUT_SIZES } from "@shared/constants"
-import type { ShortcutSize, Subscription, SuspiciousLinkMode } from "@shared/types"
+import type {
+  ShortcutSize,
+  Subscription,
+  SuspiciousLinkMode,
+} from "@shared/types"
 
 const REGISTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-license`
 
@@ -193,13 +197,7 @@ function Toggle({
 // ── Steps ────────────────────────────────────────────────────────────────────
 
 // Step 0: Welcome
-function StepWelcome({
-  onNext,
-  onSkip,
-}: {
-  onNext: () => void
-  onSkip: () => void
-}) {
+function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <>
       <div
@@ -214,36 +212,20 @@ function StepWelcome({
           two minutes.
         </p>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <button
-          style={primaryBtn}
-          onClick={onNext}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-accent-strong)"
-            e.currentTarget.style.transform = "scale(1.02)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--color-accent)"
-            e.currentTarget.style.transform = "scale(1)"
-          }}
-        >
-          Get started <ArrowRightIcon size={18} />
-        </button>
-        <button
-          style={ghostBtnStyle}
-          onClick={onSkip}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-surface)"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge-mid)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge)"
-          }}
-        >
-          Skip for now — I'll finish this later
-        </button>
-      </div>
+      <button
+        style={primaryBtn}
+        onClick={onNext}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "var(--color-accent-strong)"
+          e.currentTarget.style.transform = "scale(1.02)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--color-accent)"
+          e.currentTarget.style.transform = "scale(1)"
+        }}
+      >
+        Get started <ArrowRightIcon size={18} />
+      </button>
     </>
   )
 }
@@ -263,21 +245,25 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
     }
     setLoading(true)
     try {
+      const installId = await storage.local.get("installId")
       const res = await fetch(REGISTER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify({ email: trimmed, installId }),
       })
-      const data = await res.json() as {
+      const data = (await res.json()) as {
         licenseKey?: string
         status?: string
         trialEndsAt?: string
         error?: string
+        reason?: string
       }
       if (!res.ok) {
         if (res.status === 403) {
           setError(
-            "This email's free trial has already been used. Please subscribe at easysurf.app to continue.",
+            data.reason === "device"
+              ? "This browser has already used its free trial. Please subscribe at easysurf.app to continue."
+              : "This email's free trial has already been used. Please subscribe at easysurf.app to continue.",
           )
         } else {
           setError(data.error ?? "Something went wrong. Please try again.")
@@ -286,7 +272,12 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
       }
       const trialEndsAt = data.trialEndsAt ?? null
       const daysLeft = trialEndsAt
-        ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000))
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000,
+            ),
+          )
         : null
       const sub: Subscription = {
         status: (data.status ?? "trial") as Subscription["status"],
@@ -307,7 +298,9 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
 
   return (
     <>
-      <div style={{ textAlign: "center" as const, color: "var(--color-accent)" }}>
+      <div
+        style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
+      >
         <EnvelopeIcon size={48} weight="fill" />
       </div>
       <div>
@@ -349,7 +342,13 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
           e.currentTarget.style.transform = "scale(1)"
         }}
       >
-        {loading ? "Checking…" : <>Continue <ArrowRightIcon size={18} /></>}
+        {loading ? (
+          "Checking…"
+        ) : (
+          <>
+            Continue <ArrowRightIcon size={18} />
+          </>
+        )}
       </button>
     </>
   )
@@ -432,7 +431,9 @@ function StepShortcuts({
     try {
       hostname = new URL(full).hostname
     } catch {
-      setErr("That doesn't look like a website address. Try something like youtube.com")
+      setErr(
+        "That doesn't look like a website address. Try something like youtube.com",
+      )
       return
     }
     const finalLabel = label.trim() || hostname.replace(/^www\./, "")
@@ -442,10 +443,26 @@ function StepShortcuts({
   }
 
   const SUGGESTIONS: SuggestionItem[] = [
-    { url: "https://youtube.com", label: "YouTube", icon: <PlayIcon size={14} weight="fill" /> },
-    { url: "https://bbc.co.uk/news", label: "BBC News", icon: <NewspaperIcon size={14} weight="bold" /> },
-    { url: "https://google.com/maps", label: "Maps", icon: <MapPinIcon size={14} weight="fill" /> },
-    { url: "https://facebook.com", label: "Facebook", icon: <UsersIcon size={14} weight="bold" /> },
+    {
+      url: "https://youtube.com",
+      label: "YouTube",
+      icon: <PlayIcon size={14} weight="fill" />,
+    },
+    {
+      url: "https://bbc.co.uk/news",
+      label: "BBC News",
+      icon: <NewspaperIcon size={14} weight="bold" />,
+    },
+    {
+      url: "https://google.com/maps",
+      label: "Maps",
+      icon: <MapPinIcon size={14} weight="fill" />,
+    },
+    {
+      url: "https://facebook.com",
+      label: "Facebook",
+      icon: <UsersIcon size={14} weight="bold" />,
+    },
   ]
 
   return (
@@ -467,7 +484,9 @@ function StepShortcuts({
               <button
                 key={s.url}
                 type="button"
-                onClick={() => setList((prev) => [...prev, { url: s.url, label: s.label }])}
+                onClick={() =>
+                  setList((prev) => [...prev, { url: s.url, label: s.label }])
+                }
                 style={{
                   padding: "0.3rem 0.75rem",
                   borderRadius: 20,
@@ -582,55 +601,48 @@ function StepShortcuts({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "0.5rem" }}>
-        <button
-          style={primaryBtn}
-          onClick={() => onNext(list)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-accent-strong)"
-            e.currentTarget.style.transform = "scale(1.02)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--color-accent)"
-            e.currentTarget.style.transform = "scale(1)"
-          }}
-        >
-          Next <ArrowRightIcon size={18} />
-        </button>
-        <button
-          style={ghostBtnStyle}
-          onClick={() => onNext([])}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-surface)"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge-mid)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge)"
-          }}
-        >
-          Skip for now
-        </button>
-      </div>
+      <button
+        style={primaryBtn}
+        onClick={() => onNext(list)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "var(--color-accent-strong)"
+          e.currentTarget.style.transform = "scale(1.02)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--color-accent)"
+          e.currentTarget.style.transform = "scale(1)"
+        }}
+      >
+        Next <ArrowRightIcon size={18} />
+      </button>
     </>
   )
 }
 
 // Step 3: Shortcut size
-const SIZE_META: Record<ShortcutSize, { label: string; px: number; hint: string }> = {
-  small:  { label: "Small",   px: 72,  hint: "Compact — fits more tiles" },
-  medium: { label: "Medium",  px: 96,  hint: "Balanced — good for most" },
-  large:  { label: "Large",   px: 120, hint: "Easier to tap" },
-  xl:     { label: "X-Large", px: 148, hint: "Very easy to see and tap" },
-  xl2:    { label: "Biggest", px: 176, hint: "Maximum size" },
+const SIZE_META: Record<
+  ShortcutSize,
+  { label: string; px: number; hint: string }
+> = {
+  small: { label: "Small", px: 72, hint: "Compact — fits more tiles" },
+  medium: { label: "Medium", px: 96, hint: "Balanced — good for most" },
+  large: { label: "Large", px: 120, hint: "Easier to tap" },
+  xl: { label: "X-Large", px: 148, hint: "Very easy to see and tap" },
+  xl2: { label: "Biggest", px: 176, hint: "Maximum size" },
 }
 
-function StepShortcutSize({ onNext }: { onNext: (size: ShortcutSize) => void }) {
+function StepShortcutSize({
+  onNext,
+}: {
+  onNext: (size: ShortcutSize) => void
+}) {
   const [selected, setSelected] = useState<ShortcutSize>("medium")
 
   return (
     <>
-      <div style={{ textAlign: "center" as const, color: "var(--color-accent)" }}>
+      <div
+        style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
+      >
         <RulerIcon size={48} weight="fill" />
       </div>
       <div>
@@ -657,7 +669,9 @@ function StepShortcutSize({ onNext }: { onNext: (size: ShortcutSize) => void }) 
                 padding: "0.75rem 1rem",
                 borderRadius: "var(--radius-md)",
                 border: `2px solid ${isSelected ? "var(--color-accent)" : "var(--color-surface-edge)"}`,
-                background: isSelected ? "var(--color-accent-xlight)" : "var(--color-surface)",
+                background: isSelected
+                  ? "var(--color-accent-xlight)"
+                  : "var(--color-surface)",
                 cursor: "pointer",
                 textAlign: "left" as const,
                 transition: "border-color 0.15s, background 0.15s",
@@ -669,16 +683,29 @@ function StepShortcutSize({ onNext }: { onNext: (size: ShortcutSize) => void }) 
                   width: meta.px * 0.5,
                   height: meta.px * 0.5,
                   borderRadius: 8,
-                  background: isSelected ? "var(--color-accent)" : "var(--color-surface-edge)",
+                  background: isSelected
+                    ? "var(--color-accent)"
+                    : "var(--color-surface-edge)",
                   flexShrink: 0,
                   transition: "background 0.15s, width 0.15s, height 0.15s",
                 }}
               />
               <div>
-                <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-text)" }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    color: "var(--color-text)",
+                  }}
+                >
                   {meta.label}
                 </div>
-                <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
                   {meta.hint}
                 </div>
               </div>
@@ -853,11 +880,9 @@ function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
 // Step 4: Handover
 function StepHandover({
   seniorName,
-  onDone,
   onStartTour,
 }: {
   seniorName: string
-  onDone: () => void
   onStartTour: () => void
 }) {
   const name = seniorName || "the senior"
@@ -890,20 +915,6 @@ function StepHandover({
         >
           Start the quick tour for {name} <ArrowRightIcon size={18} />
         </button>
-        <button
-          style={ghostBtnStyle}
-          onClick={onDone}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-surface)"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge-mid)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent"
-            e.currentTarget.style.borderColor = "var(--color-surface-edge)"
-          }}
-        >
-          Skip the tour — we're done
-        </button>
       </div>
     </>
   )
@@ -920,10 +931,6 @@ export function OnboardingWizard({ onComplete }: Props) {
   const markDone = () =>
     storage.local.update("config", { onboardingDone: true }).catch(() => {})
 
-  const handleSkip = async () => {
-    await markDone()
-    onComplete()
-  }
 
   // step 1 → 2: email registered
   const handleStep1 = (_email: string) => setStep(2)
@@ -972,11 +979,6 @@ export function OnboardingWizard({ onComplete }: Props) {
     setStep(6)
   }
 
-  const handleDone = async () => {
-    await markDone()
-    onComplete()
-  }
-
   const handleStartTour = async () => {
     await markDone()
     onComplete()
@@ -1002,20 +1004,35 @@ export function OnboardingWizard({ onComplete }: Props) {
       <div style={card}>
         <Dots step={step} total={TOTAL_STEPS} />
 
-        {step === 0 && (
-          <StepWelcome onNext={() => setStep(1)} onSkip={handleSkip} />
-        )}
+        {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
         {step === 1 && <StepEmail onNext={handleStep1} />}
         {step === 2 && <StepNames onNext={handleStep2} />}
         {step === 3 && <StepShortcuts onNext={handleStep3} />}
         {step === 4 && <StepShortcutSize onNext={handleStep4} />}
         {step === 5 && <StepSecurity onNext={handleStep5} />}
         {step === 6 && (
-          <StepHandover
-            seniorName={seniorName}
-            onDone={handleDone}
-            onStartTour={handleStartTour}
-          />
+          <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
+        )}
+
+        {/* Skip current optional step only — does not exit the wizard */}
+        {step >= 2 && step <= 5 && (
+          <button
+            onClick={() => setStep((s) => s + 1)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--color-text-subtle)",
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              padding: "0.25rem 0",
+              textAlign: "center" as const,
+              textDecoration: "underline",
+              textDecorationStyle: "dotted" as const,
+              textUnderlineOffset: "3px",
+            }}
+          >
+            Skip this step →
+          </button>
         )}
       </div>
     </div>

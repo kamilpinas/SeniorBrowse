@@ -18,6 +18,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Persist default config so future reads always deep-merge against it.
     const config = await storage.local.get("config")
     await storage.local.set("config", config)
+
+    // Generate a stable device ID used to prevent repeated free trials from
+    // the same browser even when different email addresses are entered.
+    const existingId = await storage.local.get("installId")
+    if (!existingId) {
+      await storage.local.set("installId", crypto.randomUUID())
+    }
+
     console.info("[SeniorWeb] default config seeded")
   }
   await ensureTrialStatus()

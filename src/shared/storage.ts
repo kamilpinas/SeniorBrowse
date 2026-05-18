@@ -16,6 +16,8 @@ export interface LocalStore {
   savedLinks: SavedLink[]
   activityLog: ActivityLogEntry[]
   subscription: Subscription | null
+  /** Stable UUID generated on first install — sent with license registration to prevent device reuse of free trial. */
+  installId: string
 }
 
 export interface SessionStore {
@@ -47,6 +49,7 @@ const DEFAULTS: { local: LocalStore; session: SessionStore } = {
     savedLinks: [],
     activityLog: [],
     subscription: null,
+    installId: "",
   },
   session: {
     currentFontSize: null,
