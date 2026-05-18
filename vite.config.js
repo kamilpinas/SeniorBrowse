@@ -7,6 +7,7 @@ const root = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   root: resolve(root, 'src'),
+  envDir: root, // load .env from project root, not src/
   publicDir: resolve(root, 'public'),
   plugins: [react()],
   resolve: {
