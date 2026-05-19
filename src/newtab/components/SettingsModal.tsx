@@ -555,6 +555,7 @@ interface ProfileTabProps {
 function ProfileTab({ onStartSeniorTour, showToast }: ProfileTabProps) {
   const [seniorName, setSeniorName] = useState("")
   const [caregiverName, setCaregiverName] = useState("")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     storage.local
@@ -564,7 +565,10 @@ function ProfileTab({ onStartSeniorTour, showToast }: ProfileTabProps) {
         setCaregiverName(c.caregiverName)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
+
+  if (loading) return <Spinner />
 
   const saveField = async (
     field: "seniorName" | "caregiverName",

@@ -387,7 +387,7 @@ export function App() {
               "background 0.18s cubic-bezier(0.22,1,0.36,1), transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#6e2808"
+            e.currentTarget.style.background = "var(--color-accent-strong)"
             e.currentTarget.style.transform = "scale(1.04)"
             e.currentTarget.style.boxShadow = "0 10px 32px rgba(0,0,0,0.3)"
           }}

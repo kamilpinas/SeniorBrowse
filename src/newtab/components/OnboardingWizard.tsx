@@ -174,7 +174,8 @@ function Toggle({
         border: "none",
         cursor: "pointer",
         padding: 0,
-        transition: "background 0.2s",
+        transition: "background 0.22s, box-shadow 0.22s",
+        boxShadow: checked ? "0 0 0 3px var(--color-accent-light)" : "none",
       }}
     >
       <span
@@ -335,7 +336,7 @@ function StepEmail({ onNext }: { onNext: (email: string) => void }) {
         />
       </Field>
       {error && (
-        <p style={{ margin: 0, color: "#c0392b", fontSize: "0.875rem" }}>
+        <p style={{ margin: 0, color: "var(--color-danger)", fontSize: "0.875rem" }}>
           {error}
         </p>
       )}
@@ -1048,7 +1049,7 @@ export function OnboardingWizard({ onComplete }: Props) {
         )}
 
         {/* Back / skip row for optional steps */}
-        {step >= 2 && step <= 6 && (
+        {step >= 1 && step <= 6 && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.25rem" }}>
             {/* ← Back: go to previous step */}
             <button
