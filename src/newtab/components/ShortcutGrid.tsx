@@ -1,6 +1,7 @@
 // A-03: drag-to-reorder  A-04: resize  A-05: add shortcut  A-06: delete + undo
 
 import { useEffect, useRef, useState } from "react"
+import { useFocusTrap } from "@shared/useFocusTrap"
 import {
   BookIcon,
   ChatCircleIcon,
@@ -278,10 +279,10 @@ function AdminTile({ shortcut, size, onRequestDelete, onRename }: AdminTileProps
         aria-label={`Remove ${shortcut.label}`}
         style={{
           position: "absolute",
-          top: 5,
-          right: 5,
-          width: 20,
-          height: 20,
+          top: 4,
+          right: 4,
+          width: 32,
+          height: 32,
           borderRadius: "50%",
           border: "1.5px solid var(--color-surface-edge)",
           background: "var(--color-bg)",
@@ -362,10 +363,10 @@ function AdminTile({ shortcut, size, onRequestDelete, onRename }: AdminTileProps
         title="Rename"
         style={{
           position: "absolute",
-          bottom: 5,
-          right: 5,
-          width: 20,
-          height: 20,
+          bottom: 4,
+          right: 4,
+          width: 32,
+          height: 32,
           borderRadius: "50%",
           border: "1.5px solid var(--color-surface-edge)",
           background: "var(--color-bg)",
@@ -538,6 +539,9 @@ function DeleteConfirmModal({
   onConfirm,
   onCancel,
 }: DeleteModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(modalRef)
+
   // Close on backdrop click
   const onBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onCancel()
@@ -567,6 +571,10 @@ function DeleteConfirmModal({
       }}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-confirm-title"
         style={{
           background: "var(--color-bg)",
           border: "1.5px solid var(--color-surface-edge)",
@@ -600,6 +608,7 @@ function DeleteConfirmModal({
 
         <div>
           <h2
+            id="delete-confirm-title"
             style={{
               margin: "0 0 0.4rem",
               fontSize: "1.25rem",
@@ -753,8 +762,12 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
   const [selectedChipUrl, setSelectedChipUrl] = useState<string | null>(null)
   const [prefillIconUrl, setPrefillIconUrl] = useState("")
 
+  const formRef = useRef<HTMLDivElement>(null)
   const urlInputRef = useRef<HTMLInputElement>(null)
   const labelInputRef = useRef<HTMLInputElement>(null)
+
+  // C-04: trap Tab/Shift+Tab inside the form; keep the URL input's own auto-focus
+  useFocusTrap(formRef, { autoFocus: false })
 
   // Focus the URL field on mount
   useEffect(() => {
@@ -884,6 +897,10 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
       }}
     >
       <div
+        ref={formRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-shortcut-title"
         style={{
           background: "var(--color-surface)",
           border: "1.5px solid var(--color-surface-edge)",
@@ -900,6 +917,7 @@ function AddShortcutForm({ existingUrls, onAdd, onCancel }: AddFormProps) {
         }}
       >
         <h2
+          id="add-shortcut-title"
           style={{
             margin: 0,
             fontSize: "1.1rem",

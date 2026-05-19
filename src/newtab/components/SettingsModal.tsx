@@ -41,18 +41,21 @@ import type {
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
 function Toggle({
-  CheckIconed,
+  checked,
   onChange,
+  label,
 }: {
-  CheckIconed: boolean
+  checked: boolean
   onChange: (v: boolean) => void
+  label: string
 }) {
   return (
     <button
       type="button"
       role="switch"
-      aria-checked={CheckIconed}
-      onClick={() => onChange(!CheckIconed)}
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
       style={{
         position: "relative",
         display: "inline-flex",
@@ -61,21 +64,21 @@ function Toggle({
         height: 28,
         borderRadius: 14,
         flexShrink: 0,
-        background: CheckIconed
+        background: checked
           ? "var(--color-accent)"
           : "var(--color-surface-edge)",
         border: "none",
         cursor: "pointer",
         padding: 0,
         transition: "background 0.22s",
-        boxShadow: CheckIconed ? "0 0 0 3px var(--color-accent-light)" : "none",
+        boxShadow: checked ? "0 0 0 3px var(--color-accent-light)" : "none",
       }}
     >
       <span
         style={{
           position: "absolute",
           top: 3,
-          left: CheckIconed ? 23 : 3,
+          left: checked ? 23 : 3,
           width: 22,
           height: 22,
           borderRadius: "50%",
@@ -173,7 +176,6 @@ const textInput: React.CSSProperties = {
   fontSize: "1rem",
   fontFamily: "inherit",
   color: "var(--color-text)",
-  outline: "none",
   width: "100%",
   transition: "border-color 0.15s",
 }
@@ -395,6 +397,7 @@ function PinChangeWidget({
           </div>
         </div>
         <button
+          type="button"
           onClick={reset}
           style={{
             background: "none",
@@ -404,7 +407,11 @@ function PinChangeWidget({
             fontSize: "0.875rem",
             fontWeight: 600,
             fontFamily: "inherit",
-            padding: "2px 6px",
+            padding: "0 0.75rem",
+            minHeight: 44,
+            borderRadius: 8,
+            display: "inline-flex",
+            alignItems: "center",
           }}
         >
           Cancel
@@ -827,7 +834,7 @@ const LINK_MODE_LABELS: Record<
     title: "Warn before visiting",
     desc: "Show a warning with option to continue",
   },
-  off: { title: "Off", desc: "No link CheckIconing" },
+  off: { title: "Off", desc: "No link checking" },
 }
 
 function SecurityTab({
@@ -909,8 +916,9 @@ function SecurityTab({
         hint="Cancel any file download automatically"
       >
         <Toggle
-          CheckIconed={cfg.blockDownloads}
+          checked={cfg.blockDownloads}
           onChange={(v) => patchToggle("blockDownloads", v)}
+          label="Block downloads"
         />
       </SettingRow>
 
@@ -919,8 +927,9 @@ function SecurityTab({
         hint="Hide ads and tracking scripts on all websites"
       >
         <Toggle
-          CheckIconed={cfg.blockAds}
+          checked={cfg.blockAds}
           onChange={(v) => patchToggle("blockAds", v)}
+          label="Block ads"
         />
       </SettingRow>
 
@@ -931,6 +940,7 @@ function SecurityTab({
         }}
       >
         <div
+          id="suspicious-protection-label"
           style={{
             fontWeight: 600,
             fontSize: "0.95rem",
@@ -941,6 +951,8 @@ function SecurityTab({
           Suspicious site protection
         </div>
         <div
+          role="radiogroup"
+          aria-labelledby="suspicious-protection-label"
           style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}
         >
           {SUSPICIOUS_LINK_MODES.map((mode) => {
@@ -950,6 +962,8 @@ function SecurityTab({
               <button
                 key={mode}
                 type="button"
+                role="radio"
+                aria-checked={active}
                 onClick={() => patchMode(mode)}
                 style={{
                   display: "flex",
@@ -1373,7 +1387,6 @@ function ActivityLogTab() {
             color: "var(--color-text)",
             fontSize: "0.875rem",
             fontFamily: "inherit",
-            outline: "none",
           }}
         />
       </div>

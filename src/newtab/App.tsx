@@ -123,10 +123,7 @@ export function App() {
         const newSub = changes["subscription"]!.newValue as
           | { status?: string; email?: string }
           | undefined
-        if (
-          newSub?.status === "expired" ||
-          newSub?.status === "not_found"
-        ) {
+        if (newSub?.status === "expired" || newSub?.status === "not_found") {
           setIsExpired(true)
           if (newSub.email) setAccountEmail(newSub.email)
         }
@@ -364,7 +361,7 @@ export function App() {
               lineHeight: 1.6,
             }}
           >
-            Please click the big button below to start browsing.
+            Your helper panel is closed. Click the button below to open it.
           </p>
         </div>
 
@@ -387,7 +384,7 @@ export function App() {
             cursor: "pointer",
             boxShadow: "0 6px 24px rgba(0,0,0,0.22)",
             transition:
-              "background 0.18s cubic-bezier(.22,.68,0,1.2), transform 0.18s cubic-bezier(.22,.68,0,1.2), box-shadow 0.18s",
+              "background 0.18s cubic-bezier(0.22,1,0.36,1), transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#6e2808"
@@ -400,7 +397,7 @@ export function App() {
             e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.22)"
           }}
         >
-          Click here to start
+          Open your helper panel
         </button>
       </main>
     )
@@ -478,47 +475,49 @@ export function App() {
 
       {/* Dark / light mode toggle — fixed bottom-left, caregiver-only (UX-06).
           Hidden from seniors to prevent accidental theme changes. */}
-      {adminMode && <button
-        type="button"
-        title={
-          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-        }
-        onClick={toggleTheme}
-        style={{
-          position: "fixed",
-          bottom: "1.25rem",
-          left: "1.25rem",
-          zIndex: 200,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.4rem",
-          padding: "0.5rem 0.9rem",
-          background: "var(--color-surface)",
-          border: "1.5px solid var(--color-surface-edge)",
-          borderRadius: "var(--radius-md)",
-          boxShadow: "var(--shadow-soft)",
-          fontSize: "0.85rem",
-          fontWeight: 600,
-          fontFamily: "inherit",
-          color: "var(--color-text-muted)",
-          cursor: "pointer",
-          transition:
-            "background 0.18s cubic-bezier(.4,0,.2,1), color 0.18s cubic-bezier(.4,0,.2,1), border-color 0.18s cubic-bezier(.4,0,.2,1)",
-        }}
-        onMouseEnter={(e) => {
-          const b = e.currentTarget
-          b.style.background = "var(--color-bg)"
-          b.style.color = "var(--color-text)"
-        }}
-        onMouseLeave={(e) => {
-          const b = e.currentTarget
-          b.style.background = "var(--color-surface)"
-          b.style.color = "var(--color-text-muted)"
-        }}
-      >
-        {theme === "dark" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
-        {theme === "dark" ? "Light mode" : "Dark mode"}
-      </button>}
+      {adminMode && (
+        <button
+          type="button"
+          title={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+          onClick={toggleTheme}
+          style={{
+            position: "fixed",
+            bottom: "1.25rem",
+            left: "1.25rem",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            padding: "0.5rem 0.9rem",
+            background: "var(--color-surface)",
+            border: "1.5px solid var(--color-surface-edge)",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-soft)",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            fontFamily: "inherit",
+            color: "var(--color-text-muted)",
+            cursor: "pointer",
+            transition:
+              "background 0.18s cubic-bezier(.4,0,.2,1), color 0.18s cubic-bezier(.4,0,.2,1), border-color 0.18s cubic-bezier(.4,0,.2,1)",
+          }}
+          onMouseEnter={(e) => {
+            const b = e.currentTarget
+            b.style.background = "var(--color-bg)"
+            b.style.color = "var(--color-text)"
+          }}
+          onMouseLeave={(e) => {
+            const b = e.currentTarget
+            b.style.background = "var(--color-surface)"
+            b.style.color = "var(--color-text-muted)"
+          }}
+        >
+          {theme === "dark" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+          {theme === "dark" ? "Light mode" : "Dark mode"}
+        </button>
+      )}
 
       {/* Caregiver settings button — visible in the bottom-right corner.
           Hidden when already in admin mode (the banner handles that). */}

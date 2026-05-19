@@ -71,6 +71,7 @@ export function SearchBar() {
           name="q"
           type="search"
           autoComplete="off"
+          aria-label="Search the web"
           placeholder="Search the web…"
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -104,7 +105,7 @@ export function SearchBar() {
             cursor: "pointer",
             whiteSpace: "nowrap",
             letterSpacing: "0.01em",
-            transition: "background 0.18s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(.22,.68,0,1.2)",
+            transition: "background 0.18s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(0.22,1,0.36,1)",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "#6e2808"

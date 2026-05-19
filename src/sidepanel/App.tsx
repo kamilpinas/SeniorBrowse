@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { useFocusTrap } from "@shared/useFocusTrap"
 import { createPortal } from "react-dom"
 import Sortable from "sortablejs"
 import {
@@ -415,7 +416,7 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
         </span>
       </div>
 
-      {/* Equaliser bar */}
+      {/* Equaliser bar — uses scaleY (GPU-composited) instead of height (layout) */}
       <div
         style={{
           display: "flex",
@@ -423,24 +424,30 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
           alignItems: "flex-end",
           height: 32,
           padding: "0 2px",
+          overflow: "hidden",
         }}
       >
-        {Array.from({ length: SEGMENTS }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              height: i < filled ? barHeight(i) : 6,
-              borderRadius: 3,
-              background:
-                i < filled
+        {Array.from({ length: SEGMENTS }, (_, i) => {
+          const maxH = barHeight(i)
+          const isFilled = i < filled
+          return (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: maxH,
+                borderRadius: 3,
+                background: isFilled
                   ? `hsl(${22 + i * 4}, 72%, ${46 - i * 1.5}%)`
                   : "var(--sw-surface-edge)",
-              transition:
-                "height 0.12s cubic-bezier(.22,.68,0,1.2), background 0.15s",
-            }}
-          />
-        ))}
+                transformOrigin: "bottom",
+                transform: isFilled ? "scaleY(1)" : `scaleY(${(6 / maxH).toFixed(3)})`,
+                transition:
+                  "transform 0.12s cubic-bezier(0.22,1,0.36,1), background 0.15s",
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* − Less / + More */}
@@ -1010,7 +1017,7 @@ function PanelTourCard({
             margin: "0 0 0.35rem",
             fontSize: "1rem",
             fontWeight: 800,
-            color: "var(--sw-text-muted)",
+            color: "var(--sw-text)",
             lineHeight: 1.25,
           }}
         >
@@ -1264,6 +1271,115 @@ function PanelWizard({ onDone, onSkip }: { onDone: () => void; onSkip: () => voi
       />
     </div>,
     document.body,
+  )
+}
+
+// ── Close-browser confirmation dialog ────────────────────────────────────────
+// C-01: uses --sw-* tokens (sidepanel namespace).
+// C-04: focus trap so Tab can't escape; Cancel is first → default focus target.
+
+function CloseBrowserConfirm({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  useFocusTrap(ref)
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10300,
+        background: "rgba(42,38,32,0.72)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1.5rem",
+      }}
+    >
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="close-confirm-title"
+        style={{
+          background: "var(--sw-surface-raised)",
+          border: "1.5px solid var(--sw-surface-edge)",
+          borderRadius: "var(--sw-radius-lg)",
+          padding: "1.75rem 1.5rem",
+          width: "100%",
+          maxWidth: 280,
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.25rem",
+          textAlign: "center",
+        }}
+      >
+        <p
+          id="close-confirm-title"
+          style={{
+            margin: 0,
+            fontSize: "1.05rem",
+            fontWeight: 700,
+            color: "var(--sw-text)",
+            lineHeight: 1.4,
+          }}
+        >
+          Close the whole browser?
+        </p>
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.875rem",
+            color: "var(--sw-text-muted)",
+            lineHeight: 1.5,
+          }}
+        >
+          This will close Chrome completely.
+        </p>
+        {/* Cancel first in DOM — receives auto-focus, safe default */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              padding: "0.65rem",
+              background: "transparent",
+              color: "var(--sw-text-muted)",
+              border: "1.5px solid var(--sw-surface-edge)",
+              borderRadius: "var(--sw-radius)",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              fontFamily: "inherit",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            style={{
+              padding: "0.75rem",
+              background: "var(--sw-danger)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "var(--sw-radius)",
+              fontWeight: 700,
+              fontSize: "0.95rem",
+              fontFamily: "inherit",
+              cursor: "pointer",
+            }}
+          >
+            Yes, close browser
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1929,80 +2045,14 @@ export function App() {
 
       {/* Close-browser confirmation — only shown when closing the last tab */}
       {showCloseConfirm && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 10300,
-            background: "rgba(42,38,32,0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1.5rem",
+        <CloseBrowserConfirm
+          onConfirm={async () => {
+            setShowCloseConfirm(false)
+            const tab = await getTab()
+            if (tab?.id != null) await chrome.tabs.remove(tab.id)
           }}
-        >
-          <div
-            style={{
-              background: "var(--color-surface-raised)",
-              border: "1.5px solid var(--color-surface-edge)",
-              borderRadius: "var(--radius-xl)",
-              padding: "1.75rem 1.5rem",
-              width: "100%",
-              maxWidth: 280,
-              display: "flex",
-              flexDirection: "column",
-              gap: "1.25rem",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700, color: "var(--color-text)", lineHeight: 1.4 }}>
-              Close the whole browser?
-            </p>
-            <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--color-text-muted)", lineHeight: 1.5 }}>
-              This will close Chrome completely.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              <button
-                type="button"
-                onClick={async () => {
-                  setShowCloseConfirm(false)
-                  const tab = await getTab()
-                  if (tab?.id != null) await chrome.tabs.remove(tab.id)
-                }}
-                style={{
-                  padding: "0.75rem",
-                  background: "var(--color-danger)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  fontFamily: "inherit",
-                  cursor: "pointer",
-                }}
-              >
-                Yes, close browser
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCloseConfirm(false)}
-                style={{
-                  padding: "0.65rem",
-                  background: "transparent",
-                  color: "var(--color-text-muted)",
-                  border: "1.5px solid var(--color-surface-edge)",
-                  borderRadius: "var(--radius-md)",
-                  fontWeight: 600,
-                  fontSize: "0.9rem",
-                  fontFamily: "inherit",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+          onCancel={() => setShowCloseConfirm(false)}
+        />
       )}
 
       {/* Floating toast — sits above everything */}

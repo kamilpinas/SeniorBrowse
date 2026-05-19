@@ -16,6 +16,7 @@ const FOCUSABLE_SELECTORS = [
 
 export function useFocusTrap(
   containerRef: React.RefObject<HTMLElement | null>,
+  { autoFocus = true }: { autoFocus?: boolean } = {},
 ) {
   const prevFocusRef = useRef<HTMLElement | null>(null)
 
@@ -29,8 +30,9 @@ export function useFocusTrap(
     const getFocusable = () =>
       Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS))
 
-    // Move focus inside the trap immediately.
-    getFocusable()[0]?.focus()
+    // Move focus inside the trap immediately (opt-out when the caller
+    // manages its own initial focus, e.g. AddShortcutForm).
+    if (autoFocus) getFocusable()[0]?.focus()
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return
