@@ -76,7 +76,7 @@ const SIZE_NAMES: Record<ShortcutSize, string> = {
 // ── Avatar helpers ────────────────────────────────────────────────────────────
 
 const AVATAR_PALETTE = [
-  "#c25e2a",
+  "#9c3520",   // updated to match current accent
   "#2a6dc2",
   "#2a9c6d",
   "#8c4cc2",
@@ -89,7 +89,7 @@ const AVATAR_PALETTE = [
 function getAvatarColor(seed: string): string {
   let h = 0
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0
-  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length] ?? "#c25e2a"
+  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length] ?? "#9c3520"
 }
 
 // ── Icon ─────────────────────────────────────────────────────────────────────
@@ -174,17 +174,12 @@ function ViewTile({
         boxShadow: hovered ? "var(--shadow-soft)" : "none",
         transform: hovered ? "translateY(-3px)" : "translateY(0)",
         transition:
-          "background 0.18s cubic-bezier(.4,0,.2,1), border-color 0.18s cubic-bezier(.4,0,.2,1), box-shadow 0.18s cubic-bezier(.4,0,.2,1), transform 0.22s cubic-bezier(.22,.68,0,1.4)",
+          "background 0.2s cubic-bezier(0.22,1,0.36,1), border-color 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)",
         textDecoration: "none",
         cursor: "pointer",
         minHeight: 80,
-        outline: "none",
-      }}
-      onFocus={(e) => {
-        e.currentTarget.style.outline = "2px solid var(--color-accent)"
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.outline = "none"
+        // A8: let the global :focus-visible rule supply the outline —
+        // don't suppress it with outline:none then manually reinstate it.
       }}
     >
       <ShortcutIcon shortcut={shortcut} size={size} />

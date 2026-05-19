@@ -5,7 +5,8 @@
 // M-05: Activity Log tab
 // M-06: Trial tab
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useFocusTrap } from "@shared/useFocusTrap"
 import {
   ArrowRightIcon,
   BookmarkSimpleIcon,
@@ -50,7 +51,7 @@ function Toggle({
     <button
       type="button"
       role="switch"
-      aria-CheckIconed={CheckIconed}
+      aria-checked={CheckIconed}
       onClick={() => onChange(!CheckIconed)}
       style={{
         position: "relative",
@@ -79,7 +80,7 @@ function Toggle({
           height: 22,
           borderRadius: "50%",
           background: "#fff",
-          transition: "left 0.2s cubic-bezier(.22,.68,0,1.4)",
+          transition: "left 0.22s cubic-bezier(0.22,1,0.36,1)",
           boxShadow: "0 1px 4px rgba(0,0,0,0.22)",
         }}
       />
@@ -806,7 +807,7 @@ function ExportDataWidget({
           opacity: exporting ? 0.6 : 1,
         }}
       >
-        {exporting ? "Saving…" : "⬇ Save backup"}
+        {exporting ? "Saving…" : <><span aria-hidden="true">⬇ </span>Save backup</>}
       </button>
     </div>
   )
@@ -1746,7 +1747,11 @@ function StatCard({ label, value }: { label: string; value: string }) {
           fontWeight: 700,
           fontSize: "1rem",
           color: "var(--color-text)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
+        title={value}
       >
         {value}
       </div>
@@ -1823,6 +1828,9 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const { toast, showToast } = useToast()
 
+  // A2: trap focus inside the dialog while open.
+  useFocusTrap(dialogRef)
+
   // Lock body scroll while open.
   useEffect(() => {
     document.body.style.overflow = "hidden"
@@ -1840,16 +1848,33 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
     return () => window.removeEventListener("keydown", handler)
   }, [onClose])
 
+  // A4: keyboard arrow navigation between tabs (ARIA tablist pattern).
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return
+      e.preventDefault()
+      const ids = TABS.map((t) => t.id)
+      const currentIndex = ids.indexOf(activeTab)
+      const next =
+        e.key === "ArrowRight"
+          ? (currentIndex + 1) % ids.length
+          : (currentIndex - 1 + ids.length) % ids.length
+      setActiveTab(ids[next]!)
+      // Move DOM focus to the newly selected tab button.
+      const tabEl = document.getElementById(`settings-tab-${ids[next]}`)
+      tabEl?.focus()
+    },
+    [activeTab],
+  )
+
   return (
-    /* Frosted backdrop */
+    /* Backdrop — solid overlay, no blur (P2: blur is expensive on low-end GPUs) */
     <div
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 10000,
-        background: "rgba(28, 24, 20, 0.6)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "rgba(28, 24, 20, 0.72)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -1865,7 +1890,7 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Settings"
+        aria-labelledby="settings-modal-title"
         className="sw-modal-in"
         style={{
           background: "var(--color-bg)",
@@ -1894,6 +1919,7 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
         >
           <div>
             <h2
+              id="settings-modal-title"
               style={{
                 margin: 0,
                 fontSize: "1.25rem",
@@ -1915,23 +1941,24 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
               Manage names, security, and saved pages
             </p>
           </div>
+          {/* A5: close button minimum 44×44px */}
           <button
             onClick={onClose}
             aria-label="Close settings"
             style={{
-              width: 36,
-              height: 36,
+              width: 44,
+              height: 44,
               borderRadius: "50%",
               border: "1.5px solid var(--color-surface-edge)",
               background: "var(--color-bg)",
               cursor: "pointer",
-              fontSize: "1.1rem",
+              fontSize: "1.2rem",
               fontWeight: 700,
               color: "var(--color-text-muted)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              transition: "background 0.12s, color 0.12s, border-color 0.12s",
+              transition: "background 0.2s, color 0.2s, border-color 0.2s",
               flexShrink: 0,
             }}
             onMouseEnter={(e) => {
@@ -1947,16 +1974,19 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
           </button>
         </div>
 
-        {/* Pill tab bar */}
+        {/* A4: ARIA tablist — pill tab bar wraps at narrow widths (R1) */}
         <div
+          role="tablist"
+          aria-label="Settings sections"
+          onKeyDown={handleTabKeyDown}
           style={{
             display: "flex",
+            flexWrap: "wrap",
             gap: "0.35rem",
             padding: "0.75rem 1.5rem",
             borderBottom: "1.5px solid var(--color-surface-edge)",
             background: "var(--color-surface)",
             flexShrink: 0,
-            overflowX: "auto",
           }}
         >
           {TABS.map(({ id, label, icon }) => {
@@ -1964,7 +1994,12 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
             return (
               <button
                 key={id}
+                id={`settings-tab-${id}`}
                 type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls={`settings-panel-${id}`}
+                tabIndex={active ? 0 : -1}
                 onClick={() => setActiveTab(id)}
                 style={{
                   display: "flex",
@@ -2012,8 +2047,14 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
           })}
         </div>
 
-        {/* Tab content */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "1.4rem 1.5rem" }}>
+        {/* A4: tab panel — associated with the active tab via aria-labelledby */}
+        <div
+          id={`settings-panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`settings-tab-${activeTab}`}
+          tabIndex={0}
+          style={{ flex: 1, overflowY: "auto", padding: "1.4rem 1.5rem" }}
+        >
           {activeTab === "profile" && (
             <ProfileTab
               onStartSeniorTour={onStartSeniorTour}

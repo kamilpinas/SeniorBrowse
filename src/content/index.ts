@@ -20,56 +20,6 @@ if (
   void init()
 }
 
-// ── Floating panel-open button ────────────────────────────────────────────────
-
-function injectPanelButton() {
-  if (document.getElementById("sw-panel-btn")) return
-
-  const styleEl = document.createElement("style")
-  styleEl.id = "sw-panel-btn-style"
-  styleEl.textContent = `
-    @keyframes sw-pulse {
-      0%, 100% { box-shadow: 0 1px 2px rgba(42,38,32,0.06), 0 6px 20px rgba(42,38,32,0.10); }
-      50%       { box-shadow: 0 1px 2px rgba(42,38,32,0.06), 0 6px 20px rgba(42,38,32,0.10),
-                              0 0 0 6px rgba(180,100,40,0.28); }
-    }
-    #sw-panel-btn {
-      position:      fixed;
-      bottom:        1.25rem;
-      left:          1.25rem;
-      z-index:       2147483644;
-      display:       flex;
-      align-items:   center;
-      gap:           0.4rem;
-      padding:       0.55rem 1rem;
-      background:    #faf6ee;
-      border:        1.5px solid #ddd4be;
-      border-radius: 12px;
-      font-size:     0.875rem;
-      font-weight:   700;
-      font-family:   ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      color:         #6b6354;
-      cursor:        pointer;
-      user-select:   none;
-      transition:    background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
-      white-space:   nowrap;
-      animation:     sw-pulse 2.2s ease-in-out infinite;
-    }
-    #sw-panel-btn:hover {
-      background:  #f0ebe0;
-      color:       #2a2620;
-      box-shadow:  0 2px 4px rgba(42,38,32,0.08), 0 10px 28px rgba(42,38,32,0.14);
-      transform:   translateY(-1px);
-    }
-    #sw-panel-btn:active { transform: translateY(0); }
-    #sw-panel-btn .sw-btn-icon { font-size: 1rem; line-height: 1; }
-    @media (prefers-reduced-motion: reduce) {
-      #sw-panel-btn { animation: none; }
-    }
-  `
-  ;(document.head ?? document.documentElement).appendChild(styleEl)
-}
-
 // ── Panel-closed banner ───────────────────────────────────────────────────────
 // A large, senior-friendly sticky banner fixed at the BOTTOM of the page.
 // The senior can still read and scroll the page above it.
@@ -187,8 +137,6 @@ async function init() {
   }
 
   if (!panelEnabled) return
-
-  injectPanelButton()
 
   // Show overlay immediately if panel is already closed, and keep it in sync
   // whenever the user closes or opens the panel from any surface.

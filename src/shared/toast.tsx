@@ -33,8 +33,12 @@ export function FloatingToast({ toast }: FloatingToastProps) {
   const { bg, border, icon } = STYLE[toast.type]
 
   return createPortal(
-    /* Full-screen scrim — dims the page so the toast is impossible to miss */
+    /* Full-screen scrim — dims the page so the toast is impossible to miss.
+       role="status" + aria-live="polite" announces the message to screen readers. */
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -69,7 +73,7 @@ export function FloatingToast({ toast }: FloatingToastProps) {
           textAlign: 'center' as const,
           fontFamily: "'Outfit', ui-sans-serif, system-ui, sans-serif",
           // scale-in + scale-out
-          animation: 'sw-toast-in 0.38s cubic-bezier(.22,.68,0,1.2) both, sw-toast-out 0.38s ease 3.74s both',
+          animation: 'sw-toast-in 0.38s cubic-bezier(0.22,1,0.36,1) both, sw-toast-out 0.38s ease 3.74s both',
         }}
       >
         {/* Icon circle */}

@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { storage } from "@shared/storage"
+import { useFocusTrap } from "@shared/useFocusTrap"
 
 interface Props {
   onSuccess: () => void
@@ -28,6 +29,9 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
   const [countdown, setCountdown] = useState(0)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // A2: trap keyboard focus inside the card.
+  const cardRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(cardRef)
 
   const isLocked = lockedUntil !== null && Date.now() < lockedUntil
 
@@ -121,15 +125,13 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
   const showRecoveryHint = attempts >= 1 && !isLocked
 
   return (
-    /* Backdrop */
+    /* Backdrop — solid overlay (no blur, consistent with settings modal) */
     <div
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 10300,
-        background: "rgba(28, 24, 20, 0.65)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        background: "rgba(28, 24, 20, 0.72)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -139,8 +141,12 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
         if (e.target === e.currentTarget) onCancel()
       }}
     >
-      {/* Card */}
+      {/* Card — A2: ref for focus trap, role for screen readers */}
       <div
+        ref={cardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pin-modal-title"
         className={`sw-modal-in${shake ? " sw-shake" : ""}`}
         style={{
           background: "var(--color-surface-raised)",
@@ -190,6 +196,7 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
         {/* Header text */}
         <div>
           <h2
+            id="pin-modal-title"
             style={{
               margin: "0 0 0.3rem",
               fontSize: "1.3rem",
@@ -262,7 +269,10 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
 
         {/* Numpad — replaced by countdown display while locked */}
         {isLocked ? (
+          /* A6: aria-live="assertive" announces the lock to screen readers */
           <div
+            aria-live="assertive"
+            aria-atomic="true"
             style={{
               display: "flex",
               flexDirection: "column",
