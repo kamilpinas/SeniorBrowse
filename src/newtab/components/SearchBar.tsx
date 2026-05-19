@@ -77,7 +77,7 @@ export function SearchBar() {
           onBlur={() => setFocused(false)}
           style={{
             flex: 1,
-            minHeight: "68px",
+            minHeight: "clamp(52px, 7vh, 68px)",
             padding: "0 1rem",
             fontSize: "clamp(1.05rem, 1.8vw, 1.25rem)",
             fontWeight: 500,
@@ -93,9 +93,9 @@ export function SearchBar() {
         <button
           type="submit"
           style={{
-            margin: "6px",
-            padding: "0 1.8rem",
-            fontSize: "1.5rem",
+            margin: "5px",
+            padding: "0 clamp(0.9rem, 1.4vw, 1.8rem)",
+            fontSize: "clamp(1rem, 1.5vw, 1.4rem)",
             fontWeight: 700,
             fontFamily: "inherit",
             color: "#fff",
@@ -108,7 +108,7 @@ export function SearchBar() {
             transition: "background 0.18s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(0.22,1,0.36,1)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#6e2808"
+            e.currentTarget.style.background = "var(--color-accent-strong)"
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "var(--color-accent-strong)"

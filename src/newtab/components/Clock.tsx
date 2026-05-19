@@ -40,7 +40,7 @@ export function Clock() {
       {/* Large time with subtle AM/PM superscript */}
       <div
         style={{
-          fontSize: 'clamp(2rem, 3.8vw, 3.4rem)',
+          fontSize: 'clamp(1.6rem, 2.9vw, 3rem)',
           fontWeight: 700,
           lineHeight: 1.05,
           letterSpacing: '-0.03em',
@@ -71,13 +71,13 @@ export function Clock() {
       {/* Date pill */}
       <div
         style={{
-          marginTop: '0.4rem',
+          marginTop: '0.25rem',
           display: 'inline-block',
           padding: '0.22rem 0.75rem',
           background: 'var(--color-surface)',
           border: '1.5px solid var(--color-surface-edge)',
           borderRadius: 'var(--radius-pill)',
-          fontSize: '0.85rem',
+          fontSize: '0.78rem',
           fontWeight: 500,
           color: 'var(--color-text-muted)',
           letterSpacing: '0.01em',

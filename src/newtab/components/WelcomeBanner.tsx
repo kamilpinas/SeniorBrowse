@@ -38,7 +38,7 @@ export function WelcomeBanner() {
     >
       <h1
         style={{
-          fontSize: 'clamp(2.4rem, 4.5vw, 4.6rem)',
+          fontSize: 'clamp(1.6rem, 3.2vw, 3.6rem)',
           fontWeight: 800,
           margin: 0,
           lineHeight: 1.12,
@@ -68,9 +68,9 @@ export function WelcomeBanner() {
 
       <p
         style={{
-          marginTop: '0.7rem',
+          marginTop: '0.4rem',
           marginBottom: 0,
-          fontSize: 'clamp(1rem, 1.8vw, 1.3rem)',
+          fontSize: 'clamp(0.875rem, 1.4vw, 1.1rem)',
           color: 'var(--color-text-muted)',
           fontWeight: 400,
           letterSpacing: '0.005em',
