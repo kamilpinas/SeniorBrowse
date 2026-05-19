@@ -352,8 +352,7 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
             <strong style={{ color: "var(--color-text)" }}>
               The original default is 1234.
             </strong>{" "}
-            If you changed it, open Settings and look under Profile, or reinstall
-            the extension to reset everything.
+            If you changed it, open Settings and look under Profile to set a new one.
           </p>
         )}
       </div>
@@ -396,7 +395,7 @@ function NumKey({
         cursor: shake ? "default" : "pointer",
         color: hov ? "var(--color-accent)" : "var(--color-text)",
         transition:
-          "background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s",
+          "background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s",
         transform: hov ? "scale(1.04)" : "scale(1)",
         userSelect: "none",
       }}

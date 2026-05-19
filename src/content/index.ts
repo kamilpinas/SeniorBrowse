@@ -63,6 +63,9 @@ function injectPanelButton() {
     }
     #sw-panel-btn:active { transform: translateY(0); }
     #sw-panel-btn .sw-btn-icon { font-size: 1rem; line-height: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      #sw-panel-btn { animation: none; }
+    }
   `
   ;(document.head ?? document.documentElement).appendChild(styleEl)
 }
@@ -85,6 +88,10 @@ function showOverlay() {
     @keyframes sw-btn-pulse {
       0%,100% { box-shadow: 0 0 0 0   rgba(255,255,255,0.55); }
       50%      { box-shadow: 0 0 0 10px rgba(255,255,255,0);   }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #sw-closed-overlay { animation: none; }
+      #sw-closed-overlay-btn { animation: none; }
     }
     #sw-closed-overlay {
       position:        fixed;
@@ -142,7 +149,7 @@ function showOverlay() {
   const overlay = document.createElement("div")
   overlay.id = "sw-closed-overlay"
   overlay.innerHTML = `
-    <div id="sw-closed-overlay-msg">📋 Your helper panel is closed</div>
+    <div id="sw-closed-overlay-msg">▐ Your helper panel is closed</div>
     <div id="sw-closed-overlay-sub">Tap the button below to open it again</div>
     <button id="sw-closed-overlay-btn">Open Helper Panel</button>
   `

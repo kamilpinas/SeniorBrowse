@@ -200,7 +200,7 @@ function SaveBtn({ onClick }: { onClick: () => void }) {
         fontWeight: 700,
         cursor: "pointer",
         transition:
-          "background 0.18s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(.4,0,.2,1)",
+          "background 0.22s cubic-bezier(0.22,1,0.36,1), transform 0.22s cubic-bezier(0.22,1,0.36,1)",
         alignSelf: "flex-start",
         letterSpacing: "0.01em",
       }}
@@ -776,7 +776,7 @@ function ExportDataWidget({
             color: "var(--color-text)",
           }}
         >
-          Backup my data
+          Save a backup copy
         </div>
         <div
           style={{
@@ -785,7 +785,7 @@ function ExportDataWidget({
             marginTop: 2,
           }}
         >
-          Download shortcuts, saved pages &amp; activity log as JSON
+          Save shortcuts and saved pages to a file, in case you need to reinstall
         </div>
       </div>
       <button
@@ -806,7 +806,7 @@ function ExportDataWidget({
           opacity: exporting ? 0.6 : 1,
         }}
       >
-        {exporting ? "Exporting…" : "⬇ Export"}
+        {exporting ? "Saving…" : "⬇ Save backup"}
       </button>
     </div>
   )
@@ -1141,7 +1141,7 @@ function SavedLinksTab() {
     return (
       <EmptyState
         icon={<BookmarkSimpleIcon size={36} color="var(--color-text-muted)" />}
-        text="No saved pages yet. Use the 'Save page' button in the side panel."
+        text="No saved pages yet. When you find a page you'd like to come back to, the helper panel can save it for you."
       />
     )
   }
@@ -1260,12 +1260,19 @@ function SavedLinksTab() {
                   border: "none",
                   cursor: "pointer",
                   color: "var(--color-text-muted)",
-                  fontSize: "1.1rem",
-                  lineHeight: 1,
                   flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 44,
+                  minHeight: 44,
+                  borderRadius: 8,
+                  transition: "color 0.2s",
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-muted)" }}
               >
-                <XIcon size={14} weight="bold" />
+                <XIcon size={16} weight="bold" />
               </button>
             )}
           </div>
@@ -1277,14 +1284,18 @@ function SavedLinksTab() {
 
 function smallBtn(bg: string, color: string): React.CSSProperties {
   return {
-    padding: "3px 9px",
-    fontSize: "0.78rem",
+    padding: "0 1rem",
+    minHeight: 44,
+    fontSize: "0.85rem",
     fontWeight: 600,
-    borderRadius: 6,
+    borderRadius: 8,
     border: "1.5px solid var(--color-surface-edge)",
     background: bg,
     color,
     cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.3rem",
   }
 }
 
@@ -1313,7 +1324,7 @@ function ActivityLogTab() {
     return (
       <EmptyState
         icon={<ClipboardTextIcon size={36} color="var(--color-text-muted)" />}
-        text="No activity recorded yet."
+        text="No pages visited yet. Pages will appear here as browsing happens."
       />
     )
   }
@@ -1404,14 +1415,15 @@ function ActivityLogTab() {
             </div>
             <div
               style={{
-                fontSize: "0.75rem",
+                fontSize: "0.78rem",
                 color: "var(--color-text-muted)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
             >
-              {entry.url}
+              {/* Show just the domain — raw URLs are meaningless to seniors */}
+              {(() => { try { return new URL(entry.url).hostname.replace(/^www\./, "") } catch { return entry.url } })()}
             </div>
           </div>
           <span
@@ -1460,27 +1472,27 @@ const STATUS_STYLE: Record<
   trial: {
     bg: "var(--color-success-light)",
     color: "var(--color-success)",
-    label: "Free trial",
+    label: "Free trial active",
   },
   active: {
     bg: "var(--color-success-light)",
     color: "var(--color-success)",
-    label: "Active",
+    label: "Subscription active",
   },
   grace: {
     bg: "var(--color-accent-xlight)",
     color: "var(--color-accent)",
-    label: "Grace period",
+    label: "Renewal needed soon",
   },
   expired: {
     bg: "var(--color-danger-light)",
     color: "var(--color-danger)",
-    label: "Expired",
+    label: "Subscription ended",
   },
   not_found: {
     bg: "var(--color-surface)",
     color: "var(--color-text-muted)",
-    label: "Not registered",
+    label: "Not set up yet",
   },
 }
 
@@ -1798,7 +1810,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     label: "Activity",
     icon: <ClipboardTextIcon size={14} />,
   },
-  { id: "trial", label: "Licence", icon: <StarIcon size={14} /> },
+  { id: "trial", label: "License", icon: <StarIcon size={14} /> },
 ]
 
 interface ModalProps {

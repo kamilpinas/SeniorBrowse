@@ -196,20 +196,24 @@ function Toggle({
 
 // ── Steps ────────────────────────────────────────────────────────────────────
 
-// Step 0: Welcome
+// Step 0: Welcome — explicitly addressed to the caregiver doing the setup
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <>
       <div
         style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
       >
-        <HandIcon size={48} weight="fill" />
+        <UsersIcon size={48} weight="fill" />
       </div>
-      <div>
-        <h2 style={heading}>Welcome to SeniorBrowse!</h2>
-        <p style={{ ...body, marginTop: "0.5rem" }}>
-          Let's get everything set up in a few easy steps. It only takes about
-          two minutes.
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <h2 style={heading}>Let's set this up together</h2>
+        <p style={body}>
+          You're the caregiver doing this setup — great! This takes about
+          3 minutes and you only need to do it once.
+        </p>
+        <p style={{ ...body, fontSize: "0.9rem" }}>
+          You'll enter a name, choose some favourite websites, and set a PIN so
+          only you can change the settings later.
         </p>
       </div>
       <button
@@ -224,7 +228,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           e.currentTarget.style.transform = "scale(1)"
         }}
       >
-        Get started <ArrowRightIcon size={18} />
+        Start setup <ArrowRightIcon size={18} />
       </button>
     </>
   )

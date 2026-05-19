@@ -22,15 +22,15 @@
         --sw-text-muted:     #3a2a1c;   /* was #7a6555 — ~10:1 on bg */
         --sw-text-subtle:    #5e4030;   /* was #b09880 — ~6:1  */
 
-        --sw-accent:         #b84e1c;   /* was #c25e2a — passes 4.5:1 w/ white */
-        --sw-accent-strong:  #903810;   /* was #a04a1c */
-        --sw-accent-light:   #f5e4d4;
-        --sw-accent-xlight:  #fdf0e8;
+        --sw-accent:         #9c3520;   /* terracotta clay — less amber, still warm */
+        --sw-accent-strong:  #7a2614;
+        --sw-accent-light:   #f5e0d4;
+        --sw-accent-xlight:  #fdf0eb;
         --sw-accent-fg:      #ffffff;
 
         /* Solid fill for buttons / banners */
-        --sw-accent-btn:       #b84e1c;   /* was #c25e2a */
-        --sw-accent-btn-hover: #903810;   /* was #a04a1c */
+        --sw-accent-btn:       #9c3520;
+        --sw-accent-btn-hover: #7a2614;
 
         --sw-success:        #1e6e4a;   /* was #2a7d5a */
 
@@ -57,7 +57,7 @@
         color: var(--sw-text);
         font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system,
           'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        font-size: 16px;
+        font-size: 18px;
         -webkit-font-smoothing: antialiased;
       }
 
@@ -92,15 +92,15 @@
         --sw-text-muted:       #dcc4a4;   /* was #c0a88e */
         --sw-text-subtle:      #b09878;   /* was #8a7060 — ~5.5:1 on bg */
 
-        --sw-accent:           #b84e1c;   /* was #c25e2a */
-        --sw-accent-btn-hover: #903810;;   /* was #c4652a */
-        --sw-accent-light:     #3c2215;
-        --sw-accent-xlight:    #2a180d;
+        --sw-accent:           #9c3520;
+        --sw-accent-btn-hover: #7a2614;
+        --sw-accent-light:     #3c1e12;
+        --sw-accent-xlight:    #2a140a;
         --sw-accent-fg:        #ffffff;
 
         /* Darker fills so solid buttons/banners aren't blinding in dark mode */
-        --sw-accent-btn:       #b84e1c;   /* was #c25e2a */
-        --sw-accent-btn-hover: #903810;   /* was #963e1a */
+        --sw-accent-btn:       #9c3520;
+        --sw-accent-btn-hover: #7a2614;
 
         --sw-success:          #48c484;   /* was #3aaa72 */
 
@@ -123,6 +123,15 @@
       ::-webkit-scrollbar-thumb {
         background: var(--sw-surface-edge);
         border-radius: 9999px;
+      }
+
+      /* Respect system reduced-motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     </style>
   </head>
