@@ -404,7 +404,7 @@ export function App() {
   }
 
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* A-02: fixed edit-mode banner */}
       {adminMode && (
         <AdminBanner
@@ -415,13 +415,17 @@ export function App() {
 
       <main
         style={{
+          flex: 1,
+          minHeight: 0,
           maxWidth: "64rem",
           margin: "0 auto",
-          padding: `${adminMode ? "4rem" : "3rem"} 2rem 4rem`,
+          width: "100%",
+          padding: adminMode
+            ? "clamp(3rem,5vh,4rem) clamp(1rem,2vw,2rem) clamp(0.5rem,1vh,1rem)"
+            : "clamp(1.5rem,2.5vh,2.5rem) clamp(1rem,2vw,2rem) clamp(0.5rem,1vh,1rem)",
           display: "flex",
           flexDirection: "column",
-          gap: "2.5rem",
-          transition: "padding-top 0.2s ease",
+          gap: "clamp(0.6rem,1.4vh,1.5rem)",
         }}
       >
         {/* N-06 — font recovery prompt */}
@@ -454,7 +458,7 @@ export function App() {
         <RecentSites />
 
         {/* N-05 + A-03..A-06 */}
-        <div className="sw-fade-up sw-stagger-4">
+        <div className="sw-fade-up sw-stagger-4" style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
           <ShortcutGrid adminMode={adminMode} />
         </div>
       </main>
@@ -667,6 +671,6 @@ export function App() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

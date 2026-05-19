@@ -57,7 +57,7 @@ function SiteCard({ site, index }: { site: RecentSite; index: number }) {
         display: "flex",
         alignItems: "center",
         gap: "0.9rem",
-        padding: "0.9rem 1.15rem",
+        padding: "0.65rem 1rem",
         borderRadius: "var(--radius-md)",
         background: hovered
           ? "var(--color-surface-raised)"
@@ -75,8 +75,8 @@ function SiteCard({ site, index }: { site: RecentSite; index: number }) {
       {/* Favicon in a rounded container */}
       <div
         style={{
-          width: 40,
-          height: 40,
+          width: 34,
+          height: 34,
           borderRadius: "var(--radius-sm)",
           background: "var(--color-accent-xlight)",
           border: "1px solid var(--color-accent-light)",
@@ -176,7 +176,7 @@ export function RecentSites() {
     <section aria-label="Recently visited sites" data-tour="recent">
       <p
         style={{
-          margin: "0 0 0.75rem 0",
+          margin: "0 0 0.5rem 0",
           fontSize: "0.8rem",
           fontWeight: 700,
           color: "var(--color-text-subtle)",
@@ -187,7 +187,7 @@ export function RecentSites() {
         Pick up where you left off
       </p>
 
-      <div style={{ display: "flex", gap: "0.9rem" }}>
+      <div style={{ display: "flex", gap: "0.65rem" }}>
         {sites.map((site, i) => (
           <SiteCard key={site.hostname} site={site} index={i} />
         ))}

@@ -50,15 +50,15 @@ import type { FontSize, PanelButtonConfig } from "@shared/types"
 // ── Icon map (Phosphor, weight="bold") ────────────────────────────────────────
 
 const PHOSPHOR: Record<string, React.ReactNode> = {
-  home:       <HouseIcon size={36} weight="bold" />,
-  back:       <ArrowLeftIcon size={36} weight="bold" />,
-  forward:    <ArrowRightIcon size={36} weight="bold" />,
-  scrollTop:  <ArrowLineUpIcon size={36} weight="bold" />,
-  zoom:       <TextAaIcon size={36} weight="bold" />,
-  save:       <BookmarkSimpleIcon size={36} weight="bold" />,
-  fullscreen: <ArrowsOutIcon size={36} weight="bold" />,
-  refresh:    <ArrowsClockwiseIcon size={36} weight="bold" />,
-  exit:       <XCircleIcon size={36} weight="bold" />,
+  home:       <HouseIcon size={28} weight="bold" />,
+  back:       <ArrowLeftIcon size={28} weight="bold" />,
+  forward:    <ArrowRightIcon size={28} weight="bold" />,
+  scrollTop:  <ArrowLineUpIcon size={28} weight="bold" />,
+  zoom:       <TextAaIcon size={28} weight="bold" />,
+  save:       <BookmarkSimpleIcon size={28} weight="bold" />,
+  fullscreen: <ArrowsOutIcon size={28} weight="bold" />,
+  refresh:    <ArrowsClockwiseIcon size={28} weight="bold" />,
+  exit:       <XCircleIcon size={28} weight="bold" />,
 }
 
 // Smaller variants for the admin drag list
@@ -99,7 +99,7 @@ function Tile({
   variant = "default",
   fullWidth = false,
   tourTarget,
-  labelFontSize = "1.5rem",
+  labelFontSize = "1.2rem",
 }: TileProps) {
   const [hov, setHov] = useState(false)
   const [pressed, setPressed] = useState(false)
@@ -151,9 +151,9 @@ function Tile({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.45rem",
-        padding: fullWidth ? "1rem 1.25rem" : "1rem 0.5rem",
-        minHeight: fullWidth ? 68 : 84,
+        gap: "0.35rem",
+        padding: fullWidth ? "0.7rem 1rem" : "0.75rem 0.4rem",
+        minHeight: fullWidth ? 50 : 60,
         background: bg,
         border,
         borderRadius: "var(--sw-radius)",
@@ -264,9 +264,9 @@ function ZoomTile({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.45rem",
-        padding: "1rem 0.5rem",
-        minHeight: 84,
+        gap: "0.35rem",
+        padding: "0.75rem 0.4rem",
+        minHeight: 60,
         background: hov ? "var(--sw-accent-light)" : "var(--sw-surface)",
         border: `1.5px solid ${hov ? "var(--sw-accent-light)" : "var(--sw-surface-edge)"}`,
         borderRadius: "var(--sw-radius)",
@@ -280,7 +280,7 @@ function ZoomTile({
         boxShadow: hov ? "var(--sw-shadow-md)" : "none",
       }}
     >
-      <TextAaIcon size={36} weight="bold" />
+      <TextAaIcon size={28} weight="bold" />
 
       {/* Step dots */}
       <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -301,7 +301,7 @@ function ZoomTile({
 
       <span
         style={{
-          fontSize: "1.5rem",
+          fontSize: "1.2rem",
           fontWeight: 700,
           letterSpacing: "0.01em",
           lineHeight: 1.2,
@@ -365,13 +365,13 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
       data-panel-tour="volume"
       style={{
         gridColumn: "span 2",
-        padding: "0.85rem 0.9rem 0.75rem",
+        padding: "0.5rem 0.7rem 0.5rem",
         background: "var(--sw-surface)",
         border: "1.5px solid var(--sw-surface-edge)",
         borderRadius: "var(--sw-radius)",
         display: "flex",
         flexDirection: "column",
-        gap: "0.65rem",
+        gap: "0.35rem",
       }}
     >
       {/* Header row — icon, label, percentage */}
@@ -393,7 +393,7 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
           {speakerIcon(volume)}
           <span
             style={{
-              fontSize: "1.5rem",
+              fontSize: "1.1rem",
               fontWeight: 700,
               color: "var(--sw-text-muted)",
             }}
@@ -422,7 +422,7 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
           display: "flex",
           gap: 3,
           alignItems: "flex-end",
-          height: 32,
+          height: 20,
           padding: "0 2px",
           overflow: "hidden",
         }}
@@ -519,7 +519,7 @@ function VolBtn({
       style={{
         flex: fullWidth ? undefined : 1,
         width: fullWidth ? "100%" : undefined,
-        height: 42,
+        height: 30,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -541,12 +541,12 @@ function VolBtn({
           display: "flex",
           alignItems: "center",
           lineHeight: 1,
-          fontSize: "1.5rem",
+          fontSize: "1.1rem",
         }}
       >
         {icon}
       </span>
-      <span style={{ fontSize: "1.5rem", fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>{label}</span>
     </button>
   )
 }
@@ -577,13 +577,13 @@ function ScrollControlTile({
       data-panel-tour="scroll"
       style={{
         gridColumn: "span 2",
-        padding: "0.85rem 0.9rem 0.75rem",
+        padding: "0.5rem 0.7rem 0.5rem",
         background: "var(--sw-surface)",
         border: "1.5px solid var(--sw-surface-edge)",
         borderRadius: "var(--sw-radius)",
         display: "flex",
         flexDirection: "column",
-        gap: "0.65rem",
+        gap: "0.35rem",
       }}
     >
       {/* Header row — icon, label, position */}
@@ -605,7 +605,7 @@ function ScrollControlTile({
           <ArrowsDownUpIcon size={22} weight="bold" />
           <span
             style={{
-              fontSize: "1.5rem",
+              fontSize: "1.1rem",
               fontWeight: 700,
               color: "var(--sw-text-muted)",
             }}
@@ -1911,7 +1911,7 @@ export function App() {
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "12px 10px",
+          padding: "8px",
           display: "flex",
           flexDirection: "column",
           gap: 0,
@@ -1940,7 +1940,7 @@ export function App() {
         ) : (
           /* ── Normal tile grid ── */
           <div
-            style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 8 }}
+            style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 6 }}
           >
             {/* Home — full-width primary */}
             {visible("home") && (
@@ -1995,7 +1995,7 @@ export function App() {
                     key={id}
                     id={id}
                     label={isFullscreen ? "SHRINK" : label("fullscreen", "FULLSCREEN")}
-                    labelFontSize="1.4rem"
+                    labelFontSize="1.1rem"
                     icon={
                       isFullscreen ? (
                         <ArrowsInIcon size={28} weight="bold" />
