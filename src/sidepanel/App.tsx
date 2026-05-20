@@ -50,30 +50,30 @@ import type { FontSize, PanelButtonConfig } from "@shared/types"
 // ── Icon map (Phosphor, weight="bold") ────────────────────────────────────────
 
 const PHOSPHOR: Record<string, React.ReactNode> = {
-  home:       <HouseIcon size={28} weight="bold" />,
-  back:       <ArrowLeftIcon size={28} weight="bold" />,
-  forward:    <ArrowRightIcon size={28} weight="bold" />,
-  scrollTop:  <ArrowLineUpIcon size={28} weight="bold" />,
-  zoom:       <TextAaIcon size={28} weight="bold" />,
-  save:       <BookmarkSimpleIcon size={28} weight="bold" />,
-  fullscreen: <ArrowsOutIcon size={28} weight="bold" />,
-  refresh:    <ArrowsClockwiseIcon size={28} weight="bold" />,
-  exit:       <XCircleIcon size={28} weight="bold" />,
+  home: <HouseIcon size={36} weight="bold" />,
+  back: <ArrowLeftIcon size={36} weight="bold" />,
+  forward: <ArrowRightIcon size={36} weight="bold" />,
+  scrollTop: <ArrowLineUpIcon size={36} weight="bold" />,
+  zoom: <TextAaIcon size={36} weight="bold" />,
+  save: <BookmarkSimpleIcon size={36} weight="bold" />,
+  fullscreen: <ArrowsOutIcon size={36} weight="bold" />,
+  refresh: <ArrowsClockwiseIcon size={36} weight="bold" />,
+  exit: <XCircleIcon size={36} weight="bold" />,
 }
 
 // Smaller variants for the admin drag list
 const PHOSPHOR_SM: Record<string, React.ReactNode> = {
-  home:       <HouseIcon size={18} weight="bold" />,
-  back:       <ArrowLeftIcon size={18} weight="bold" />,
-  forward:    <ArrowRightIcon size={18} weight="bold" />,
-  volume:     <SpeakerHighIcon size={18} weight="bold" />,
-  scroll:     <ArrowsDownUpIcon size={18} weight="bold" />,
-  scrollTop:  <ArrowLineUpIcon size={18} weight="bold" />,
-  zoom:       <TextAaIcon size={18} weight="bold" />,
-  save:       <BookmarkSimpleIcon size={18} weight="bold" />,
+  home: <HouseIcon size={18} weight="bold" />,
+  back: <ArrowLeftIcon size={18} weight="bold" />,
+  forward: <ArrowRightIcon size={18} weight="bold" />,
+  volume: <SpeakerHighIcon size={18} weight="bold" />,
+  scroll: <ArrowsDownUpIcon size={18} weight="bold" />,
+  scrollTop: <ArrowLineUpIcon size={18} weight="bold" />,
+  zoom: <TextAaIcon size={18} weight="bold" />,
+  save: <BookmarkSimpleIcon size={18} weight="bold" />,
   fullscreen: <ArrowsOutIcon size={18} weight="bold" />,
-  refresh:    <ArrowsClockwiseIcon size={18} weight="bold" />,
-  exit:       <XCircleIcon size={18} weight="bold" />,
+  refresh: <ArrowsClockwiseIcon size={18} weight="bold" />,
+  exit: <XCircleIcon size={18} weight="bold" />,
 }
 
 // ── Tile button ───────────────────────────────────────────────────────────────
@@ -441,7 +441,9 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
                   ? `hsl(${22 + i * 4}, 72%, ${46 - i * 1.5}%)`
                   : "var(--sw-surface-edge)",
                 transformOrigin: "bottom",
-                transform: isFilled ? "scaleY(1)" : `scaleY(${(6 / maxH).toFixed(3)})`,
+                transform: isFilled
+                  ? "scaleY(1)"
+                  : `scaleY(${(6 / maxH).toFixed(3)})`,
                 transition:
                   "transform 0.12s cubic-bezier(0.22,1,0.36,1), background 0.15s",
               }}
@@ -848,67 +850,125 @@ const TOUR_ICON_COLOR = "var(--sw-accent)"
 const PANEL_TOUR_STEPS: PanelTourStep[] = [
   {
     target: null,
-    icon: <HandWavingIcon size={TOUR_ICON_SIZE} weight="fill" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <HandWavingIcon
+        size={TOUR_ICON_SIZE}
+        weight="fill"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Welcome to your helper panel!",
     body: "Here you'll find quick buttons to help you browse. Let me show you each one!",
   },
   {
     target: "home",
-    icon: <HouseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <HouseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />
+    ),
     title: "Go Home",
     body: "This big button takes you back to your start page any time you get lost.",
   },
   {
     target: "back",
-    icon: <ArrowLeftIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <ArrowLeftIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Go Back or Forward",
     body: "The Back button returns to the previous page. The Forward button goes forward again — just like flipping pages in a book.",
   },
   {
     target: "volume",
-    icon: <SpeakerHighIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <SpeakerHighIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Control the Volume",
     body: "Use MORE and LESS to change how loud the sound is, or tap MUTE to silence it completely.",
   },
   {
     target: "scroll",
-    icon: <ArrowsDownUpIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <ArrowsDownUpIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Move the Page Up or Down",
     body: "Use UP and DOWN to scroll through a long page. Tap BACK TO TOP to jump straight back to the beginning.",
   },
   {
     target: "zoom",
-    icon: <TextAaIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <TextAaIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />
+    ),
     title: "Make Text Bigger",
     body: "Tap TEXT SIZE to make the writing on the page bigger. Tap it again to go back to normal size.",
   },
   {
     target: "fullscreen",
-    icon: <ArrowsOutIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <ArrowsOutIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Full Screen",
     body: "FULLSCREEN makes the page fill the whole display — great for reading or watching videos. Tap SHRINK to bring everything back.",
   },
   {
     target: "refresh",
-    icon: <ArrowsClockwiseIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <ArrowsClockwiseIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Refresh the Page",
     body: "If a page looks wrong or stopped loading, tap REFRESH to reload it from scratch.",
   },
   {
     target: "save",
-    icon: <BookmarkSimpleIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <BookmarkSimpleIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Save Pages You Like",
     body: "Found something interesting? Tap SAVE PAGE to keep it. Your caregiver will see all your saved pages.",
   },
   {
     target: "exit",
-    icon: <XCircleIcon size={TOUR_ICON_SIZE} weight="bold" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <XCircleIcon
+        size={TOUR_ICON_SIZE}
+        weight="bold"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "Close the Page",
     body: "CLOSE PAGE closes the page you're on and takes you to the next one. If it's the last page open, it will close the browser.",
   },
   {
     target: null,
-    icon: <ConfettiIcon size={TOUR_ICON_SIZE} weight="fill" color={TOUR_ICON_COLOR} />,
+    icon: (
+      <ConfettiIcon
+        size={TOUR_ICON_SIZE}
+        weight="fill"
+        color={TOUR_ICON_COLOR}
+      />
+    ),
     title: "You're all set!",
     body: "Tap any button to start browsing. Your caregiver can always help if you need anything.",
   },
@@ -1117,7 +1177,13 @@ function PanelTourCard({
 
 // ── Panel wizard — spotlight overlay via createPortal ─────────────────────────
 
-function PanelWizard({ onDone, onSkip }: { onDone: () => void; onSkip: () => void }) {
+function PanelWizard({
+  onDone,
+  onSkip,
+}: {
+  onDone: () => void
+  onSkip: () => void
+}) {
   const [step, setStep] = useState(0)
   const [spotRect, setSpotRect] = useState<DOMRect | null>(null)
   const [cardH, setCardH] = useState(PANEL_CARD_H_EST)
@@ -1342,7 +1408,9 @@ function CloseBrowserConfirm({
           This will close Chrome completely.
         </p>
         {/* Cancel first in DOM — receives auto-focus, safe default */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}
+        >
           <button
             type="button"
             onClick={onCancel}
@@ -1421,7 +1489,11 @@ export function App() {
         setAdminMode(!!isAdmin)
         // Only show panel wizard AFTER the newtab onboarding is done.
         // panelWizardDone guards against showing it a second time.
-        if (config.onboardingDone && !config.panelWizardDone && !panelWizardDismissed.current)
+        if (
+          config.onboardingDone &&
+          !config.panelWizardDone &&
+          !panelWizardDismissed.current
+        )
           setShowPanelWizard(true)
         const savedOrder = config.panelButtonOrder?.length
           ? config.panelButtonOrder
@@ -1469,13 +1541,10 @@ export function App() {
             setIsLastTab(false)
             return
           }
-          chrome.tabs.query(
-            { windowId: activeTab.windowId },
-            (tabs) => {
-              if (chrome.runtime.lastError) return
-              setIsLastTab(tabs.length <= 1)
-            },
-          )
+          chrome.tabs.query({ windowId: activeTab.windowId }, (tabs) => {
+            if (chrome.runtime.lastError) return
+            setIsLastTab(tabs.length <= 1)
+          })
         },
       )
     }
@@ -1514,7 +1583,11 @@ export function App() {
       const cfg = changes["config"]?.newValue as
         | { onboardingDone?: boolean; panelWizardDone?: boolean }
         | undefined
-      if (cfg?.onboardingDone && !cfg?.panelWizardDone && !panelWizardDismissed.current) {
+      if (
+        cfg?.onboardingDone &&
+        !cfg?.panelWizardDone &&
+        !panelWizardDismissed.current
+      ) {
         setShowPanelWizard(true)
       }
     }
@@ -1522,14 +1595,26 @@ export function App() {
     return () => chrome.storage.onChanged.removeListener(handler)
   }, [])
 
-  // ── Dark theme — apply on load, keep in sync across tabs ────────────────
+  // ── Theme (brightness + colour) — apply on load, keep in sync across tabs
   useEffect(() => {
+    const COLOR_CLASSES = ["theme-red", "theme-blue", "theme-green"] as const
+
+    const apply = (theme: string | undefined, color: string | undefined) => {
+      const root = document.documentElement
+      // Brightness
+      if (theme === "dark") root.classList.add("dark")
+      else if (theme === "light") root.classList.remove("dark")
+      // Colour — red is the default (no class)
+      if (color === "blue" || color === "green" || color === "red") {
+        for (const c of COLOR_CLASSES) root.classList.remove(c)
+        if (color !== "red") root.classList.add(`theme-${color}`)
+      }
+    }
+
     storage.local
       .get("config")
       .then((cfg) => {
-        const t = cfg.theme ?? "light"
-        if (t === "dark") document.documentElement.classList.add("dark")
-        else document.documentElement.classList.remove("dark")
+        apply(cfg.theme ?? "light", cfg.themeColor ?? "red")
       })
       .catch(() => {})
 
@@ -1538,12 +1623,10 @@ export function App() {
       area: string,
     ) => {
       if (area !== "local" || !("config" in changes)) return
-      const next = (
-        changes["config"]?.newValue as { theme?: string } | undefined
-      )?.theme
-      if (next === "dark") document.documentElement.classList.add("dark")
-      else if (next === "light")
-        document.documentElement.classList.remove("dark")
+      const next = changes["config"]?.newValue as
+        | { theme?: string; themeColor?: string }
+        | undefined
+      apply(next?.theme, next?.themeColor)
     }
     chrome.storage.onChanged.addListener(onThemeChange)
     return () => chrome.storage.onChanged.removeListener(onThemeChange)
@@ -1610,7 +1693,8 @@ export function App() {
       .catch(() => {})
     setTimeout(async () => {
       const after = await getTab()
-      if (after?.url === urlBefore) showToast("Nothing to go forward to", "error")
+      if (after?.url === urlBefore)
+        showToast("Nothing to go forward to", "error")
     }, 400)
   }, [getTab, showToast])
 
@@ -1719,7 +1803,10 @@ export function App() {
     await storage.local.set("savedLinks", next)
     // Log the save event so it appears in the caregiver's Activity Log (B-06).
     chrome.runtime
-      .sendMessage({ type: "LOG_ACTIVITY", payload: { url, title, type: "save" } })
+      .sendMessage({
+        type: "LOG_ACTIVITY",
+        payload: { url, title, type: "save" },
+      })
       .catch(() => {})
     showToast(
       `Saved! ${caregiverName.current || "Your caregiver"} will see this.`,
@@ -1793,15 +1880,15 @@ export function App() {
   const label = (id: string, fallback: string) => btnCfgs[id]?.label ?? fallback
 
   const handlers: Record<string, () => void> = {
-    home:       handleHome,
-    back:       handleBack,
-    forward:    handleForward,
-    scrollTop:  handleScrollTop,
-    zoom:       handleZoom,
-    save:       handleSave,
+    home: handleHome,
+    back: handleBack,
+    forward: handleForward,
+    scrollTop: handleScrollTop,
+    zoom: handleZoom,
+    save: handleSave,
     fullscreen: handleFullscreen,
-    refresh:    handleRefresh,
-    exit:       handleExit,
+    refresh: handleRefresh,
+    exit: handleExit,
   }
 
   // ── Scroll position sync (must be after refreshScrollPos is declared) ────
@@ -1940,7 +2027,11 @@ export function App() {
         ) : (
           /* ── Normal tile grid ── */
           <div
-            style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 6 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+              gap: 6,
+            }}
           >
             {/* Home — full-width primary */}
             {visible("home") && (
@@ -1994,8 +2085,12 @@ export function App() {
                   <Tile
                     key={id}
                     id={id}
-                    label={isFullscreen ? "SHRINK" : label("fullscreen", "FULLSCREEN")}
-                    labelFontSize="1.1rem"
+                    label={
+                      isFullscreen
+                        ? "SHRINK"
+                        : label("fullscreen", "FULLSCREEN")
+                    }
+                    labelFontSize="1.2rem"
                     icon={
                       isFullscreen ? (
                         <ArrowsInIcon size={28} weight="bold" />

@@ -11,6 +11,7 @@ import type {
   ActivityType,
   SubscriptionStatus,
   Theme,
+  ThemeColor,
 } from "./types"
 
 export const MAX_LOG_ENTRIES = 1000
@@ -33,6 +34,21 @@ export const UNDO_TOAST_MS = 5000
 // Value-list enums (runtime arrays paired with string-union types).
 export const FONT_SIZES: readonly FontSize[] = ["normal", "large", "xlarge"]
 export const THEMES: readonly Theme[] = ["light", "dark"]
+export const THEME_COLORS: readonly ThemeColor[] = ["red", "blue", "green"]
+
+/** Accent swatch colour shown in the theme picker — matches the active light-mode --color-accent. */
+export const THEME_COLOR_SWATCH: Record<ThemeColor, string> = {
+  red: "#9c3520",
+  blue: "#2456a0",
+  green: "#2c7a3d",
+}
+
+/** User-visible label for each theme colour (used by wizard + settings). */
+export const THEME_COLOR_LABEL: Record<ThemeColor, string> = {
+  red: "Warm Red",
+  blue: "Ocean Blue",
+  green: "Forest Green",
+}
 export const PANEL_POSITIONS: readonly PanelPosition[] = ["left", "right"]
 export const SHORTCUT_SIZES: readonly ShortcutSize[] = [
   "small",
@@ -84,16 +100,16 @@ export const DEFAULT_PANEL_BUTTON_ORDER: string[] = [
 
 /** Default label + visibility for each button. */
 export const DEFAULT_PANEL_BUTTONS: Record<string, PanelButtonConfig> = {
-  home:       { label: "HOME",        visible: true },
-  back:       { label: "BACK",        visible: true },
-  forward:    { label: "FORWARD",     visible: true },
-  volume:     { label: "VOLUME",      visible: true },
-  scroll:     { label: "MOVE PAGE",   visible: true },
-  zoom:       { label: "TEXT SIZE",   visible: true },
-  save:       { label: "SAVE PAGE",   visible: true },
-  fullscreen: { label: "FULL SCREEN", visible: true },
-  refresh:    { label: "REFRESH",     visible: true },
-  exit:       { label: "CLOSE PAGE",  visible: true },
+  home: { label: "HOME", visible: true },
+  back: { label: "BACK", visible: true },
+  forward: { label: "FORWARD", visible: true },
+  volume: { label: "VOLUME", visible: true },
+  scroll: { label: "MOVE PAGE", visible: true },
+  zoom: { label: "TEXT SIZE", visible: true },
+  save: { label: "SAVE PAGE", visible: true },
+  fullscreen: { label: "FULLSCREEN", visible: true },
+  refresh: { label: "REFRESH", visible: true },
+  exit: { label: "CLOSE PAGE", visible: true },
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -120,4 +136,5 @@ export const DEFAULT_CONFIG: Config = {
   shortcutSize: "medium",
   panelEnabled: true,
   theme: "light",
+  themeColor: "red",
 }

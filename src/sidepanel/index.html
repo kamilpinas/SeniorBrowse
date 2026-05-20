@@ -79,6 +79,28 @@
         to   { opacity: 0; transform: scale(0.88); }
       }
 
+      /* ── Colour themes ──────────────────────────────────
+         Default (no class) = warm red / terracotta.
+         .theme-blue and .theme-green swap only the accent ramp. */
+
+      :root.theme-blue {
+        --sw-accent:           #2456a0;
+        --sw-accent-strong:    #173f7a;
+        --sw-accent-light:     #dbe6f3;
+        --sw-accent-xlight:    #ecf2fa;
+        --sw-accent-btn:       #2456a0;
+        --sw-accent-btn-hover: #173f7a;
+      }
+
+      :root.theme-green {
+        --sw-accent:           #2c7a3d;
+        --sw-accent-strong:    #1d5a2a;
+        --sw-accent-light:     #d8e9da;
+        --sw-accent-xlight:    #ebf3ec;
+        --sw-accent-btn:       #2c7a3d;
+        --sw-accent-btn-hover: #1d5a2a;
+      }
+
       /* ── Dark theme ─────────────────────────────────── */
 
       :root.dark {
@@ -94,15 +116,15 @@
         --sw-text-muted:       #dcc4a4;   /* was #c0a88e */
         --sw-text-subtle:      #b09878;   /* was #8a7060 — ~5.5:1 on bg */
 
-        --sw-accent:           #9c3520;
-        --sw-accent-btn-hover: #7a2614;
+        --sw-accent:           #d4502c;   /* brighter terracotta for dark mode visibility */
+        --sw-accent-strong:    #9c3520;
         --sw-accent-light:     #3c1e12;
         --sw-accent-xlight:    #2a140a;
         --sw-accent-fg:        #ffffff;
 
-        /* Darker fills so solid buttons/banners aren't blinding in dark mode */
-        --sw-accent-btn:       #9c3520;
-        --sw-accent-btn-hover: #7a2614;
+        /* Solid fills tuned for legibility on dark surfaces */
+        --sw-accent-btn:       #d4502c;
+        --sw-accent-btn-hover: #9c3520;
 
         --sw-success:          #48c484;   /* was #3aaa72 */
 
@@ -114,6 +136,47 @@
       }
 
       :root.dark body { background: var(--sw-bg); }
+
+      /* Dark-mode for alternative accents.
+         Backgrounds and neutrals tinted toward the accent hue
+         so the surface feels cohesive in dark mode. */
+      :root.dark.theme-blue {
+        --sw-bg:               #0f141c;
+        --sw-surface:          #181f2a;
+        --sw-surface-raised:   #222a38;
+        --sw-surface-edge:     #3a4860;
+        --sw-surface-edge-mid: #536580;
+
+        --sw-text:             #eaf0fa;
+        --sw-text-muted:       #b6c8e4;
+        --sw-text-subtle:      #8298b8;
+
+        --sw-accent:           #4d7cc8;
+        --sw-accent-strong:    #2456a0;
+        --sw-accent-light:     #14253f;
+        --sw-accent-xlight:    #0d1a2e;
+        --sw-accent-btn:       #4d7cc8;
+        --sw-accent-btn-hover: #2456a0;
+      }
+
+      :root.dark.theme-green {
+        --sw-bg:               #0f1612;
+        --sw-surface:          #172019;
+        --sw-surface-raised:   #1f2b23;
+        --sw-surface-edge:     #36473b;
+        --sw-surface-edge-mid: #506758;
+
+        --sw-text:             #eaf2ec;
+        --sw-text-muted:       #bedccc;
+        --sw-text-subtle:      #90b09c;
+
+        --sw-accent:           #4ea060;
+        --sw-accent-strong:    #2c7a3d;
+        --sw-accent-light:     #112a18;
+        --sw-accent-xlight:    #091a0d;
+        --sw-accent-btn:       #4ea060;
+        --sw-accent-btn-hover: #2c7a3d;
+      }
 
       :focus-visible {
         outline: 2.5px solid var(--sw-accent);

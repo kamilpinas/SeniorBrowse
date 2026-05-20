@@ -3,6 +3,7 @@
 export type FontSize = "normal" | "large" | "xlarge"
 export type PanelPosition = "left" | "right"
 export type Theme = "light" | "dark"
+export type ThemeColor = "red" | "blue" | "green"
 export type ShortcutSize = "small" | "medium" | "large" | "xl" | "xl2"
 export type SuspiciousLinkMode = "block" | "warn" | "off"
 export type ActivityType = "visit" | "search" | "save"
@@ -49,8 +50,10 @@ export interface Config {
   shortcutSize: ShortcutSize
   /** When false the ☰ Panel button is hidden on all pages (caregiver toggle). */
   panelEnabled: boolean
-  /** UI colour scheme selected by the user. */
+  /** Light vs dark brightness selected by the user. */
   theme: Theme
+  /** Accent colour palette selected by the user. */
+  themeColor: ThemeColor
 }
 
 export interface Shortcut {

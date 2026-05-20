@@ -182,6 +182,40 @@
       }
       ::-webkit-scrollbar-thumb:hover { background: var(--color-surface-edge-mid); }
 
+      /* ── Colour themes ─────────────────────────────────────────
+         Default (no class) = warm red / terracotta.
+         .theme-blue and .theme-green swap only the accent ramp;
+         neutrals stay warm so the brand identity is consistent.
+         The radial glow is retinted to harmonise with each accent. */
+
+      :root.theme-blue {
+        --color-accent:           #2456a0;
+        --color-accent-strong:    #173f7a;
+        --color-accent-light:     #dbe6f3;
+        --color-accent-xlight:    #ecf2fa;
+      }
+      :root.theme-blue body {
+        background-image: radial-gradient(
+          ellipse 130% 70% at 50% -8%,
+          rgba(70, 130, 230, 0.16) 0%,
+          transparent 65%
+        );
+      }
+
+      :root.theme-green {
+        --color-accent:           #2c7a3d;
+        --color-accent-strong:    #1d5a2a;
+        --color-accent-light:     #d8e9da;
+        --color-accent-xlight:    #ebf3ec;
+      }
+      :root.theme-green body {
+        background-image: radial-gradient(
+          ellipse 130% 70% at 50% -8%,
+          rgba(80, 180, 100, 0.14) 0%,
+          transparent 65%
+        );
+      }
+
       /* ── Dark theme ────────────────────────────────────────── */
 
       :root.dark {
@@ -197,8 +231,8 @@
         --color-text-muted:       #dcc4a4;   /* was #c0a88e — higher contrast */
         --color-text-subtle:      #b09878;   /* was #8a7060 — ~5.5:1 on bg  */
 
-        --color-accent:           #9c3520;
-        --color-accent-strong:    #7a2614;
+        --color-accent:           #d4502c;   /* brighter terracotta for dark mode visibility */
+        --color-accent-strong:    #9c3520;
         --color-accent-light:     #3c1e12;
         --color-accent-xlight:    #2a140a;
 
@@ -220,6 +254,59 @@
         background-image: radial-gradient(
           ellipse 130% 70% at 50% -8%,
           rgba(180, 75, 25, 0.10) 0%,
+          transparent 65%
+        );
+      }
+
+      /* Dark-mode for alternative accents.
+         Backgrounds and neutrals are tinted toward the accent hue so the
+         whole surface feels cohesive — not a warm bg with a cool accent.
+         Light mode keeps the shared warm cream (brand identity);
+         dark mode is where the moody atmosphere lives. */
+      :root.dark.theme-blue {
+        --color-bg:               #0f141c;
+        --color-surface:          #181f2a;
+        --color-surface-raised:   #222a38;
+        --color-surface-edge:     #3a4860;
+        --color-surface-edge-mid: #536580;
+
+        --color-text:             #eaf0fa;
+        --color-text-muted:       #b6c8e4;
+        --color-text-subtle:      #8298b8;
+
+        --color-accent:        #4d7cc8;
+        --color-accent-strong: #2456a0;
+        --color-accent-light:  #14253f;
+        --color-accent-xlight: #0d1a2e;
+      }
+      :root.dark.theme-blue body {
+        background-image: radial-gradient(
+          ellipse 130% 70% at 50% -8%,
+          rgba(70, 130, 220, 0.12) 0%,
+          transparent 65%
+        );
+      }
+
+      :root.dark.theme-green {
+        --color-bg:               #0f1612;
+        --color-surface:          #172019;
+        --color-surface-raised:   #1f2b23;
+        --color-surface-edge:     #36473b;
+        --color-surface-edge-mid: #506758;
+
+        --color-text:             #eaf2ec;
+        --color-text-muted:       #bedccc;
+        --color-text-subtle:      #90b09c;
+
+        --color-accent:        #4ea060;
+        --color-accent-strong: #2c7a3d;
+        --color-accent-light:  #112a18;
+        --color-accent-xlight: #091a0d;
+      }
+      :root.dark.theme-green body {
+        background-image: radial-gradient(
+          ellipse 130% 70% at 50% -8%,
+          rgba(80, 180, 100, 0.10) 0%,
           transparent 65%
         );
       }

@@ -6,9 +6,9 @@ import {
   ArrowRightIcon,
   ConfettiIcon,
   EnvelopeIcon,
-  HandIcon,
   MapPinIcon,
   NewspaperIcon,
+  PaletteIcon,
   PlayIcon,
   PlusIcon,
   RulerIcon,
@@ -21,7 +21,10 @@ import type {
   ShortcutSize,
   Subscription,
   SuspiciousLinkMode,
+  ThemeColor,
 } from "@shared/types"
+import { ThemeColorPicker } from "./ThemeColorPicker"
+import { applyTheme } from "../hooks/useTheme"
 
 const REGISTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-license`
 
@@ -72,19 +75,6 @@ const primaryBtn: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   gap: "0.4rem",
-  transition:
-    "background 0.15s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(.4,0,.2,1), border-color 0.15s",
-}
-
-const ghostBtnStyle: React.CSSProperties = {
-  padding: "0.75rem 1.4rem",
-  background: "transparent",
-  color: "var(--color-text-muted)",
-  border: "1.5px solid var(--color-surface-edge)",
-  borderRadius: "var(--radius-md)",
-  fontSize: "0.9rem",
-  fontWeight: 600,
-  cursor: "pointer",
   transition:
     "background 0.15s cubic-bezier(.4,0,.2,1), transform 0.15s cubic-bezier(.4,0,.2,1), border-color 0.15s",
 }
@@ -778,6 +768,67 @@ function StepShortcutSize({
   )
 }
 
+// Step 4b: Theme colour — pick the accent palette.
+// Live-preview: applies the chosen palette to the wizard background while
+// the caregiver browses options. Persists on Next.
+function StepTheme({
+  initial,
+  onNext,
+}: {
+  initial: ThemeColor
+  onNext: (color: ThemeColor) => void
+}) {
+  const [color, setColor] = useState<ThemeColor>(initial)
+
+  // Live preview as the caregiver clicks swatches.
+  const previewColor = (next: ThemeColor) => {
+    setColor(next)
+    // Use the current document theme (light/dark) so we don't switch brightness.
+    const isDark = document.documentElement.classList.contains("dark")
+    applyTheme(isDark ? "dark" : "light", next)
+  }
+
+  return (
+    <>
+      <div
+        style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
+      >
+        <PaletteIcon size={48} weight="fill" />
+      </div>
+      <div>
+        <h2 id="wizard-theme-title" style={heading}>
+          Pick a colour
+        </h2>
+        <p style={{ ...body, marginTop: "0.5rem" }}>
+          Choose the accent colour for buttons, links and highlights. You can
+          change it any time in Settings.
+        </p>
+      </div>
+
+      <ThemeColorPicker
+        value={color}
+        onChange={previewColor}
+        labelledBy="wizard-theme-title"
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={() => onNext(color)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "var(--color-accent-strong)"
+          e.currentTarget.style.transform = "scale(1.02)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--color-accent)"
+          e.currentTarget.style.transform = "scale(1)"
+        }}
+      >
+        Next <ArrowRightIcon size={18} />
+      </button>
+    </>
+  )
+}
+
 // Step 4: Security
 interface SecurityDraft {
   blockDownloads: boolean
@@ -956,11 +1007,12 @@ function StepHandover({
 
 // ── Wizard container ─────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 7
+const TOTAL_STEPS = 8
 
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(0)
   const [seniorName, setSeniorName] = useState("")
+  const [themeColor, setThemeColor] = useState<ThemeColor>("red")
 
   const markDone = () =>
     storage.local.update("config", { onboardingDone: true }).catch(() => {})
@@ -1003,14 +1055,21 @@ export function OnboardingWizard({ onComplete }: Props) {
     setStep(5)
   }
 
-  // step 5 → 6: security saved
-  const handleStep5 = async (sec: {
+  // step 5 → 6: theme colour saved (live-applied during preview)
+  const handleStep5 = async (color: ThemeColor) => {
+    setThemeColor(color)
+    await storage.local.update("config", { themeColor: color })
+    setStep(6)
+  }
+
+  // step 6 → 7: security saved
+  const handleStep6 = async (sec: {
     blockDownloads: boolean
     blockAds: boolean
     blockSuspiciousLinks: SuspiciousLinkMode
   }) => {
     await storage.local.update("config", { security: sec })
-    setStep(6)
+    setStep(7)
   }
 
   const handleStartTour = async () => {
@@ -1043,13 +1102,14 @@ export function OnboardingWizard({ onComplete }: Props) {
         {step === 2 && <StepNames onNext={handleStep2} />}
         {step === 3 && <StepShortcuts onNext={handleStep3} />}
         {step === 4 && <StepShortcutSize onNext={handleStep4} />}
-        {step === 5 && <StepSecurity onNext={handleStep5} />}
-        {step === 6 && (
+        {step === 5 && <StepTheme initial={themeColor} onNext={handleStep5} />}
+        {step === 6 && <StepSecurity onNext={handleStep6} />}
+        {step === 7 && (
           <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
         )}
 
         {/* Back / skip row for optional steps */}
-        {step >= 1 && step <= 6 && (
+        {step >= 1 && step <= 7 && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.25rem" }}>
             {/* ← Back: go to previous step */}
             <button
@@ -1070,7 +1130,7 @@ export function OnboardingWizard({ onComplete }: Props) {
             </button>
 
             {/* Skip this step → only on non-final optional steps */}
-            {step >= 2 && step <= 5 && (
+            {step >= 2 && step <= 6 && (
               <button
                 onClick={() => setStep((s) => s + 1)}
                 style={{
