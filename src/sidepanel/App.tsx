@@ -147,12 +147,18 @@ function Tile({
         gridColumn: fullWidth ? "span 2" : undefined,
         minWidth: 0,
         width: "100%",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.35rem",
-        padding: fullWidth ? "0.7rem 1rem" : "0.75rem 0.4rem",
+        // Tight gap + vertical padding so content fits the 1fr grid row
+        // at the 768px floor (9 rows × ~78px each). Both clamp upward
+        // with viewport so larger panels get more breathing room.
+        gap: fullWidth ? "0.6rem" : "clamp(0.2rem, 0.7vh, 0.45rem)",
+        padding: fullWidth
+          ? "clamp(0.5rem, 1.4vh, 0.95rem) 1rem"
+          : "clamp(0.3rem, 0.9vh, 0.7rem) 0.4rem",
         minHeight: fullWidth ? 50 : 60,
         background: bg,
         border,
@@ -161,6 +167,9 @@ function Tile({
         opacity: disabled ? 0.38 : 1,
         color: fg,
         fontFamily: "inherit",
+        // Clip any per-pixel rounding so descenders never get cut by a
+        // neighbouring tile's background.
+        overflow: "hidden",
         transition:
           "background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s",
         transform: pressed ? "scale(0.95)" : hov ? "scale(1.02)" : "scale(1)",
@@ -173,8 +182,10 @@ function Tile({
             : "none",
       }}
     >
-      {/* Icon */}
+      {/* Icon — wrapper font-size drives Phosphor SVG size via the
+          [data-tile-icon] svg rule in sidepanel/index.html */}
       <span
+        data-tile-icon
         style={{
           display: "flex",
           alignItems: "center",
@@ -182,6 +193,9 @@ function Tile({
           lineHeight: 0,
           flexDirection: fullWidth ? "row" : "column",
           gap: fullWidth ? "0.6rem" : 0,
+          fontSize: fullWidth
+            ? "clamp(28px, 3.6vh, 44px)"
+            : "clamp(28px, 4vh, 48px)",
         }}
       >
         {icon}
@@ -190,10 +204,10 @@ function Tile({
         {fullWidth && (
           <span
             style={{
-              fontSize: labelFontSize,
+              fontSize: `clamp(${labelFontSize}, 2.4vh, 1.9rem)`,
               fontWeight: 700,
               letterSpacing: "0.01em",
-              lineHeight: 1.2,
+              lineHeight: 1.15,
             }}
           >
             {label}
@@ -205,10 +219,14 @@ function Tile({
       {!fullWidth && (
         <span
           style={{
-            fontSize: labelFontSize,
+            fontSize: `clamp(${labelFontSize}, 2.2vh, 1.7rem)`,
             fontWeight: 700,
             letterSpacing: "0.01em",
-            lineHeight: 1.2,
+            // Tight line-height so descenders (g, y, p) don't push the
+            // baseline past the tile's vertical bound at the 768px floor.
+            lineHeight: 1.05,
+            // Add a touch of vertical breathing room for descenders.
+            paddingBottom: "0.1em",
             textAlign: "center",
             maxWidth: "100%",
             overflow: "hidden",
@@ -260,12 +278,14 @@ function ZoomTile({
       style={{
         minWidth: 0,
         width: "100%",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "0.35rem",
-        padding: "0.75rem 0.4rem",
+        // 3 content rows (icon, dots, label) — gaps & padding scale tightly.
+        gap: "clamp(0.15rem, 0.5vh, 0.35rem)",
+        padding: "clamp(0.3rem, 0.9vh, 0.7rem) 0.4rem",
         minHeight: 60,
         background: hov ? "var(--sw-accent-light)" : "var(--sw-surface)",
         border: `1.5px solid ${hov ? "var(--sw-accent-light)" : "var(--sw-surface-edge)"}`,
@@ -274,22 +294,35 @@ function ZoomTile({
         opacity: disabled ? 0.38 : 1,
         color: hov ? "var(--sw-accent)" : "var(--sw-text-muted)",
         fontFamily: "inherit",
+        overflow: "hidden",
         transition:
           "background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s",
         transform: pressed ? "scale(0.95)" : hov ? "scale(1.02)" : "scale(1)",
         boxShadow: hov ? "var(--sw-shadow-md)" : "none",
       }}
     >
-      <TextAaIcon size={28} weight="bold" />
+      <span
+        data-tile-icon
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          lineHeight: 0,
+          // Slightly smaller icon than a normal Tile — dots row eats height.
+          fontSize: "clamp(22px, 3.2vh, 40px)",
+        }}
+      >
+        <TextAaIcon size={28} weight="bold" />
+      </span>
 
       {/* Step dots */}
-      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
         {FONT_SIZES.map((_, i) => (
           <div
             key={i}
             style={{
-              width: i === sizeIdx ? 8 : 5,
-              height: i === sizeIdx ? 8 : 5,
+              width: i === sizeIdx ? 6 : 4,
+              height: i === sizeIdx ? 6 : 4,
               borderRadius: "50%",
               background:
                 i <= sizeIdx ? "currentColor" : "var(--sw-surface-edge)",
@@ -301,10 +334,11 @@ function ZoomTile({
 
       <span
         style={{
-          fontSize: "1.2rem",
+          fontSize: "clamp(1.05rem, 2vh, 1.6rem)",
           fontWeight: 700,
           letterSpacing: "0.01em",
-          lineHeight: 1.2,
+          lineHeight: 1.05,
+          paddingBottom: "0.1em",
           textAlign: "center",
         }}
       >
@@ -365,13 +399,20 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
       data-panel-tour="volume"
       style={{
         gridColumn: "span 2",
+        // Multi-row content (header, equaliser, two button rows) needs
+        // ~2× the height of a simple tile — without this, content
+        // overflows the row and overlaps neighbouring tiles.
+        gridRow: "span 2",
+        height: "100%",
         padding: "0.5rem 0.7rem 0.5rem",
         background: "var(--sw-surface)",
         border: "1.5px solid var(--sw-surface-edge)",
         borderRadius: "var(--sw-radius)",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         gap: "0.35rem",
+        overflow: "hidden",
       }}
     >
       {/* Header row — icon, label, percentage */}
@@ -383,17 +424,19 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
         }}
       >
         <div
+          data-tile-icon
           style={{
             display: "flex",
             alignItems: "center",
             gap: "0.45rem",
             color: "var(--sw-text-muted)",
+            fontSize: "clamp(22px, 3vh, 36px)",
           }}
         >
           {speakerIcon(volume)}
           <span
             style={{
-              fontSize: "1.1rem",
+              fontSize: "clamp(1.1rem, 2vh, 1.5rem)",
               fontWeight: 700,
               color: "var(--sw-text-muted)",
             }}
@@ -403,7 +446,7 @@ function VolumeControlTile({ label, volume, onSet }: VolTileProps) {
         </div>
         <span
           style={{
-            fontSize: "1.05rem",
+            fontSize: "clamp(1.05rem, 2vh, 1.5rem)",
             fontWeight: 800,
             color: muted ? "var(--sw-accent)" : "var(--sw-text)",
             fontVariantNumeric: "tabular-nums",
@@ -521,7 +564,8 @@ function VolBtn({
       style={{
         flex: fullWidth ? undefined : 1,
         width: fullWidth ? "100%" : undefined,
-        height: 30,
+        minHeight: 30,
+        height: "clamp(30px, 4.5vh, 56px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -539,16 +583,19 @@ function VolBtn({
       }}
     >
       <span
+        data-tile-icon
         style={{
           display: "flex",
           alignItems: "center",
           lineHeight: 1,
-          fontSize: "1.1rem",
+          fontSize: "clamp(1.1rem, 2vh, 1.6rem)",
         }}
       >
         {icon}
       </span>
-      <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: "clamp(1.1rem, 2vh, 1.5rem)", fontWeight: 700 }}>
+        {label}
+      </span>
     </button>
   )
 }
@@ -579,13 +626,19 @@ function ScrollControlTile({
       data-panel-tour="scroll"
       style={{
         gridColumn: "span 2",
+        // Same reasoning as VolumeControlTile — multi-row content
+        // needs 2× a simple tile's height.
+        gridRow: "span 2",
+        height: "100%",
         padding: "0.5rem 0.7rem 0.5rem",
         background: "var(--sw-surface)",
         border: "1.5px solid var(--sw-surface-edge)",
         borderRadius: "var(--sw-radius)",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         gap: "0.35rem",
+        overflow: "hidden",
       }}
     >
       {/* Header row — icon, label, position */}
@@ -597,17 +650,19 @@ function ScrollControlTile({
         }}
       >
         <div
+          data-tile-icon
           style={{
             display: "flex",
             alignItems: "center",
             gap: "0.45rem",
             color: "var(--sw-text-muted)",
+            fontSize: "clamp(22px, 3vh, 36px)",
           }}
         >
           <ArrowsDownUpIcon size={22} weight="bold" />
           <span
             style={{
-              fontSize: "1.1rem",
+              fontSize: "clamp(1.1rem, 2vh, 1.5rem)",
               fontWeight: 700,
               color: "var(--sw-text-muted)",
             }}
@@ -617,7 +672,7 @@ function ScrollControlTile({
         </div>
         <span
           style={{
-            fontSize: "1.05rem",
+            fontSize: "clamp(1.05rem, 2vh, 1.5rem)",
             fontWeight: 800,
             color: atTop || atBot ? "var(--sw-accent)" : "var(--sw-text-muted)",
             fontVariantNumeric: "tabular-nums",
@@ -1917,7 +1972,13 @@ export function App() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        // Definite, bounded height: fills the viewport but never less than
+        // 768px (below that the body scrolls). Using `height` instead of
+        // `min-height` is critical so the inner grid's 1fr rows have a
+        // definite container to divide — otherwise intrinsic content
+        // from VolumeControlTile / ScrollControlTile pushes the panel
+        // taller than 768.
+        height: "max(100vh, 768px)",
         background: "var(--sw-bg)",
       }}
     >
@@ -1993,11 +2054,11 @@ export function App() {
         </div>
       )}
 
-      {/* Scrollable area */}
+      {/* Tile area — fills remaining height; tiles inside flex via grid */}
       <div
         style={{
           flex: 1,
-          overflowY: "auto",
+          minHeight: 0,
           padding: "8px",
           display: "flex",
           flexDirection: "column",
@@ -2025,12 +2086,18 @@ export function App() {
             ))}
           </div>
         ) : (
-          /* ── Normal tile grid ── */
+          /* ── Normal tile grid ──
+             grid-auto-rows: minmax(0, 1fr) gives every row an equal share
+             of the container's height, so tiles scale up/down with the
+             panel size (the App root enforces min-height: 768). */
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+              gridAutoRows: "minmax(0, 1fr)",
               gap: 6,
+              flex: 1,
+              minHeight: 0,
             }}
           >
             {/* Home — full-width primary */}
@@ -2115,9 +2182,6 @@ export function App() {
                 />
               )
             })}
-
-            {/* Spacer row to push exit to bottom */}
-            <div style={{ gridColumn: "span 2", flex: 1 }} />
 
             {/* Exit — full-width danger at bottom */}
             {visible("exit") && (

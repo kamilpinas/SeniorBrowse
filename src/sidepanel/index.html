@@ -52,7 +52,7 @@
       html, body {
         margin: 0;
         padding: 0;
-        height: 100%;
+        min-height: 100%;
         background: var(--sw-bg);
         color: var(--sw-text);
         font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system,
@@ -60,8 +60,17 @@
         font-size: 18px;
         -webkit-font-smoothing: antialiased;
       }
+      body { overflow-y: auto; }
 
-      #root { height: 100%; }
+      #root { min-height: 100%; }
+
+      /* Tile icons size to their container's font-size so they grow with
+         the tile as the panel scales. Phosphor renders fixed-size SVGs
+         via width/height attributes — overriding here makes them fluid. */
+      [data-tile-icon] svg {
+        width: 1em !important;
+        height: 1em !important;
+      }
 
       @keyframes sw-shake {
         0%,  100% { transform: translateX(0); }
