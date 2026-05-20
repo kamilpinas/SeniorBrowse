@@ -2331,7 +2331,7 @@ interface ModalProps {
 export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("profile")
   const dialogRef = useRef<HTMLDivElement>(null)
-  const { toast, showToast } = useToast()
+  const { toast, showToast, closeToast } = useToast()
 
   // A2: trap focus inside the dialog while open.
   useFocusTrap(dialogRef)
@@ -2389,7 +2389,7 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <FloatingToast toast={toast} />
+      <FloatingToast toast={toast} onClose={closeToast} />
       {/* Modal card */}
       <div
         ref={dialogRef}

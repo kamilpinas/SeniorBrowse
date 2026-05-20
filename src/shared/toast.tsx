@@ -1,8 +1,15 @@
 // Shared floating toast — used by both sidepanel and newtab.
 // Renders via a portal so it escapes any CSS transform stacking context.
-// Designed for elderly users: large, high-contrast, center-screen.
+//
+// Design notes:
+// - Top-center floating card, NOT a blocking full-screen scrim. The page
+//   below stays interactive while the toast is up.
+// - Dismissible: ✕ button (44×44 tap target) and Escape key. Auto-dismiss
+//   still runs as a safety net so a toast never gets stuck.
+// - Large, high-contrast, accessible for elderly users — but no longer
+//   screen-filling.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 export type ToastType = 'success' | 'info' | 'error'
@@ -10,11 +17,18 @@ export type ToastType = 'success' | 'info' | 'error'
 export interface ToastState {
   msg: string
   type: ToastType
-  key: number   // changes on every show() so React remounts and restarts the animation
+  /** Changes on every show() so React remounts (restarts the enter animation). */
+  key: number
+  /** Set by closeToast() — triggers the exit transition before unmount. */
+  closing?: boolean
 }
 
-// 4.5 s total: 0.4 s in + 3.35 s visible + 0.4 s out = 4.15 s, unmount at 4.5 s
-const TOAST_MS = 4500
+// Auto-dismiss after 5 s. Long enough for slow readers, short enough not to
+// feel sticky — and the user can hit ✕ or Escape to leave sooner.
+const AUTO_DISMISS_MS = 5000
+// Exit transition duration — keep in sync with the inline `transition` on
+// the card. We wait this long before unmounting so the slide-out plays.
+const EXIT_MS = 220
 
 const STYLE: Record<ToastType, { bg: string; border: string; icon: string }> = {
   success: { bg: '#1a6644', border: 'rgba(255,255,255,0.22)', icon: '✓' },
@@ -26,68 +40,101 @@ const STYLE: Record<ToastType, { bg: string; border: string; icon: string }> = {
 
 interface FloatingToastProps {
   toast: ToastState | null
+  /** Called when the user dismisses via ✕ or Escape. Optional so old
+   *  call sites still compile, but every caller in this repo passes it. */
+  onClose?: () => void
 }
 
-export function FloatingToast({ toast }: FloatingToastProps) {
+export function FloatingToast({ toast, onClose }: FloatingToastProps) {
+  // Two-step mount so the CSS transition fires after the element is in the DOM.
+  // false = pre-enter (offscreen + transparent), true = visible.
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    if (toast && !toast.closing) {
+      // Next frame → trigger the transition from offscreen to in-place.
+      const id = requestAnimationFrame(() => setShown(true))
+      return () => cancelAnimationFrame(id)
+    }
+    setShown(false)
+    return undefined
+  }, [toast?.key, toast?.closing])
+
+  // Escape dismisses the toast. We capture in the capture phase and call
+  // stopImmediatePropagation so the toast wins over any other component
+  // that also listens for Escape (e.g. a Settings modal under the toast).
+  useEffect(() => {
+    if (!toast || !onClose || toast.closing) return undefined
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation()
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handler, true)
+    return () => window.removeEventListener('keydown', handler, true)
+  }, [toast, onClose])
+
   if (!toast) return null
   const { bg, border, icon } = STYLE[toast.type]
+  const visible = shown && !toast.closing
 
   return createPortal(
-    /* Full-screen scrim — dims the page so the toast is impossible to miss.
-       role="status" + aria-live="polite" announces the message to screen readers. */
+    /* Top-center floating container. NO full-screen scrim — the page below
+       stays interactive. role/aria-live still let screen readers announce. */
     <div
       role="status"
       aria-live="polite"
       aria-atomic="true"
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 16,
+        left: 0,
+        right: 0,
         zIndex: 2147483647,
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(10, 8, 6, 0.52)',
-        backdropFilter: 'blur(3px)',
-        WebkitBackdropFilter: 'blur(3px)',
-        pointerEvents: 'none',          // let clicks pass through
-        padding: '1.5rem',
+        padding: '0 16px',
+        // The wrapper itself ignores clicks; only the toast card catches them.
+        pointerEvents: 'none',
       }}
     >
-      {/* Toast card */}
       <div
         key={toast.key}
         style={{
+          pointerEvents: 'auto',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          gap: '1.25rem',
-          padding: '2.75rem 3rem 2.5rem',
-          minWidth: 260,
-          maxWidth: 420,
+          gap: '0.85rem',
+          padding: '0.85rem 0.85rem 0.85rem 1.1rem',
           width: '100%',
+          maxWidth: 460,
           background: bg,
-          border: `2.5px solid ${border}`,
-          borderRadius: 28,
-          boxShadow: '0 32px 80px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.30)',
+          border: `2px solid ${border}`,
+          borderRadius: 16,
+          boxShadow:
+            '0 16px 40px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.22)',
           color: '#ffffff',
-          textAlign: 'center' as const,
           fontFamily: "'Outfit', ui-sans-serif, system-ui, sans-serif",
-          // scale-in + scale-out
-          animation: 'sw-toast-in 0.38s cubic-bezier(0.22,1,0.36,1) both, sw-toast-out 0.38s ease 3.74s both',
+          transform: visible ? 'translateY(0)' : 'translateY(-24px)',
+          opacity: visible ? 1 : 0,
+          transition:
+            'transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.22s ease',
         }}
       >
-        {/* Icon circle */}
+        {/* Icon badge */}
         <div
+          aria-hidden="true"
           style={{
-            width: 80,
-            height: 80,
+            width: 42,
+            height: 42,
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.18)',
-            border: '2.5px solid rgba(255,255,255,0.55)',
+            border: '2px solid rgba(255,255,255,0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '2.6rem',
+            fontSize: '1.5rem',
             fontWeight: 900,
             lineHeight: 1,
             flexShrink: 0,
@@ -96,18 +143,59 @@ export function FloatingToast({ toast }: FloatingToastProps) {
           {icon}
         </div>
 
-        {/* Message — uppercase, very large */}
+        {/* Message */}
         <span
           style={{
-            fontSize: '1.55rem',
-            fontWeight: 800,
-            letterSpacing: '0.06em',
-            lineHeight: 1.25,
-            textTransform: 'uppercase' as const,
+            flex: 1,
+            minWidth: 0,
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            letterSpacing: '0.01em',
+            lineHeight: 1.35,
+            // Long messages wrap rather than overflow.
+            wordBreak: 'break-word',
           }}
         >
           {toast.msg}
         </span>
+
+        {/* Close button — 44×44 tap target, white-on-transparent */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Dismiss notification"
+            style={{
+              flexShrink: 0,
+              width: 44,
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              background: 'transparent',
+              border: '1.5px solid rgba(255,255,255,0.45)',
+              borderRadius: 12,
+              color: '#ffffff',
+              fontSize: '1.35rem',
+              fontWeight: 800,
+              lineHeight: 1,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'background 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.18)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.85)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.45)'
+            }}
+          >
+            ✕
+          </button>
+        )}
       </div>
     </div>,
     document.body,
@@ -118,15 +206,30 @@ export function FloatingToast({ toast }: FloatingToastProps) {
 
 export function useToast() {
   const [toast, setToast] = useState<ToastState | null>(null)
-  const timerRef          = useRef<ReturnType<typeof setTimeout>>()
 
-  useEffect(() => () => { clearTimeout(timerRef.current) }, [])
+  // Two timers: one schedules the auto-dismiss (entering closing state),
+  // the other unmounts the node after the exit transition finishes.
+  useEffect(() => {
+    if (!toast || toast.closing) return undefined
+    const dismissId = setTimeout(() => {
+      setToast((t) => (t ? { ...t, closing: true } : null))
+    }, AUTO_DISMISS_MS)
+    return () => clearTimeout(dismissId)
+  }, [toast?.key, toast?.closing])
+
+  useEffect(() => {
+    if (!toast?.closing) return undefined
+    const unmountId = setTimeout(() => setToast(null), EXIT_MS)
+    return () => clearTimeout(unmountId)
+  }, [toast?.closing, toast?.key])
 
   const showToast = (msg: string, type: ToastType = 'success') => {
-    clearTimeout(timerRef.current)
     setToast({ msg, type, key: Date.now() })
-    timerRef.current = setTimeout(() => setToast(null), TOAST_MS)
   }
 
-  return { toast, showToast }
+  const closeToast = () => {
+    setToast((t) => (t ? { ...t, closing: true } : null))
+  }
+
+  return { toast, showToast, closeToast }
 }

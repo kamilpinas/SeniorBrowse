@@ -1515,7 +1515,7 @@ export function App() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isLastTab, setIsLastTab] = useState(false)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
-  const { toast, showToast } = useToast()
+  const { toast, showToast, closeToast } = useToast()
   const [adminMode, setAdminMode] = useState(false)
   const [showPanelWizard, setShowPanelWizard] = useState(false)
   const [btnOrder, setBtnOrder] = useState([...DEFAULT_PANEL_BUTTON_ORDER])
@@ -2215,7 +2215,7 @@ export function App() {
       )}
 
       {/* Floating toast — sits above everything */}
-      <FloatingToast toast={toast} />
+      <FloatingToast toast={toast} onClose={closeToast} />
 
       {/* Panel spotlight wizard — portal-rendered so it overlays the real tiles */}
       {showPanelWizard && (
