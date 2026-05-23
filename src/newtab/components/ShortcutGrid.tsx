@@ -23,6 +23,7 @@ import {
 import Sortable from "sortablejs"
 import { storage } from "@shared/storage"
 import { UNDO_TOAST_MS } from "@shared/constants"
+import { Mark } from "@shared/Mark"
 import type { ActivityLogEntry, Shortcut, ShortcutSize } from "@shared/types"
 
 // ── Tile size config ──────────────────────────────────────────────────────────
@@ -249,7 +250,13 @@ function AdminTile({ shortcut, size, onRequestDelete, onRename }: AdminTileProps
         alignItems: "center",
         gap: cfg.gap,
         padding: cfg.padding,
-        paddingBottom: "1.75rem", // extra room for the rename button
+        // Delete button is absolute at top:4, height:32 → bottom edge y=36.
+        // Without this top-pad override, the icon starts inside the
+        // button's space and visually overlaps it (especially on
+        // small / medium sizes). Reserve 2.75rem (44px) so the icon
+        // always sits clear of the button with a 4px buffer.
+        paddingTop: "2.75rem",
+        paddingBottom: "1.75rem", // room for the rename button at the bottom
         background: "var(--color-surface)",
         border: "1.5px solid var(--color-surface-edge)",
         borderRadius: "var(--radius-md)",
@@ -1453,7 +1460,7 @@ export function ShortcutGrid({ adminMode }: Props) {
           margin: 0,
         }}
       >
-        Ask your caregiver to add your favourite websites here.
+        Ask your caregiver to add your <Mark>favourite websites</Mark> here.
       </p>
     )
   }

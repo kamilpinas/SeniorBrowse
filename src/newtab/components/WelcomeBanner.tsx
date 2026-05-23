@@ -50,11 +50,21 @@ export function WelcomeBanner() {
         {name ? (
           <>
             {phrase},{' '}
+            {/* Brand signature: name set in Instrument Serif italic terracotta.
+                Mirrors the .h-display em rule from the design system. */}
             <span
               style={{
                 color: 'var(--color-accent)',
-                display: 'inline',
-                fontWeight: 800,
+                fontFamily:
+                  "'Instrument Serif', ui-serif, Georgia, 'Times New Roman', serif",
+                fontStyle: 'italic',
+                fontWeight: 400,
+                fontSize: '1.08em',
+                letterSpacing: '-0.01em',
+                // Optical baseline nudge — Outfit ExtraBold sits a hair higher
+                // than Instrument Serif italic; drop the serif by 0.02em.
+                position: 'relative',
+                top: '0.02em',
               }}
             >
               {name}

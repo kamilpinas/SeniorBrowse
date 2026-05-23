@@ -25,6 +25,7 @@ import type {
 } from "@shared/types"
 import { ThemeColorPicker } from "./ThemeColorPicker"
 import { applyTheme } from "../hooks/useTheme"
+import { Mark } from "@shared/Mark"
 
 const REGISTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-license`
 
@@ -191,10 +192,21 @@ function Toggle({
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <div
-        style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
-      >
-        <UsersIcon size={48} weight="fill" />
+      {/* Faceless flat illustration — caregiver behind the senior at a
+          laptop. Sets the warm "we're doing this together" tone. */}
+      <div style={{ textAlign: "center" as const }}>
+        <img
+          src="/brand/illustration-family-laptop.svg"
+          alt=""
+          aria-hidden="true"
+          style={{
+            width: "100%",
+            maxWidth: 280,
+            height: "auto",
+            display: "block",
+            margin: "0 auto",
+          }}
+        />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
         <h2 style={heading}>Let's set this up together</h2>
@@ -848,6 +860,22 @@ function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
 
   return (
     <>
+      {/* Faceless "blocked safely" illustration — a senior reading peacefully
+          while the shield silently intercepts a scam in the background. */}
+      <div style={{ textAlign: "center" as const }}>
+        <img
+          src="/brand/illustration-blocked-safely.svg"
+          alt=""
+          aria-hidden="true"
+          style={{
+            width: "100%",
+            maxWidth: 240,
+            height: "auto",
+            display: "block",
+            margin: "0 auto",
+          }}
+        />
+      </div>
       <h2 style={heading}>Keep browsing safe</h2>
       <p style={body}>
         These settings protect the senior while they browse. You can change them
@@ -979,7 +1007,9 @@ function StepHandover({
         <ConfettiIcon size={48} weight="fill" />
       </div>
       <div>
-        <h2 style={heading}>All set!</h2>
+        <h2 style={heading}>
+          All <Mark>set!</Mark>
+        </h2>
         <p style={{ ...body, marginTop: "0.5rem" }}>
           SeniorBrowse is ready for <strong>{name}</strong>. Now ask them to sit
           down with you for a quick walkthrough — it only takes two minutes.

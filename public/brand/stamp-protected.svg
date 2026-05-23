@@ -1,0 +1,24 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" width="260" height="90" role="img" aria-label="Protected by SeniorBrowse">
+  <mask id="perf">
+    <rect width="260" height="90" fill="white"></rect>
+    <g fill="black">
+      <circle cx="14" cy="8" r="4"></circle><circle cx="32" cy="8" r="4"></circle><circle cx="50" cy="8" r="4"></circle>
+      <circle cx="68" cy="8" r="4"></circle><circle cx="86" cy="8" r="4"></circle><circle cx="104" cy="8" r="4"></circle>
+      <circle cx="122" cy="8" r="4"></circle><circle cx="140" cy="8" r="4"></circle><circle cx="158" cy="8" r="4"></circle>
+      <circle cx="176" cy="8" r="4"></circle><circle cx="194" cy="8" r="4"></circle><circle cx="212" cy="8" r="4"></circle>
+      <circle cx="230" cy="8" r="4"></circle><circle cx="248" cy="8" r="4"></circle>
+      <circle cx="14" cy="82" r="4"></circle><circle cx="32" cy="82" r="4"></circle><circle cx="50" cy="82" r="4"></circle>
+      <circle cx="68" cy="82" r="4"></circle><circle cx="86" cy="82" r="4"></circle><circle cx="104" cy="82" r="4"></circle>
+      <circle cx="122" cy="82" r="4"></circle><circle cx="140" cy="82" r="4"></circle><circle cx="158" cy="82" r="4"></circle>
+      <circle cx="176" cy="82" r="4"></circle><circle cx="194" cy="82" r="4"></circle><circle cx="212" cy="82" r="4"></circle>
+      <circle cx="230" cy="82" r="4"></circle><circle cx="248" cy="82" r="4"></circle>
+      <circle cx="8" cy="22" r="4"></circle><circle cx="8" cy="40" r="4"></circle><circle cx="8" cy="58" r="4"></circle><circle cx="8" cy="74" r="4"></circle>
+      <circle cx="252" cy="22" r="4"></circle><circle cx="252" cy="40" r="4"></circle><circle cx="252" cy="58" r="4"></circle><circle cx="252" cy="74" r="4"></circle>
+    </g>
+  </mask>
+  <rect x="8" y="8" width="244" height="74" fill="#fdf9f4" stroke="#9c3520" stroke-width="2" mask="url(#perf)"></rect>
+
+  <text x="130" y="36" text-anchor="middle" font-family="&#34;Outfit&#34;, system-ui, -apple-system, &#34;Segoe UI&#34;, sans-serif" font-weight="700" font-size="10" letter-spacing="3" fill="#9c3520">PROTECTED BY</text>
+  <text x="130" y="64" text-anchor="middle" font-family="&#34;Outfit&#34;, system-ui, -apple-system, &#34;Segoe UI&#34;, sans-serif" font-weight="800" font-size="24" letter-spacing="-0.8" fill="#1c1814">Senior<tspan fill="#9c3520">Browse</tspan></text>
+</svg>

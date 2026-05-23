@@ -68,8 +68,8 @@ const STEPS: TourStep[] = [
     icon: <SmileyIcon size={STEP_ICON_SIZE} weight="fill" color={STEP_ICON_COLOR} />,
     title: () => "Your personal greeting",
     body: (n) => n
-      ? <>Every time you open a new tab, you'll see a friendly welcome message just for you, <SeniorName name={n} />.</>
-      : "Every time you open a new tab, you'll see a friendly welcome message just for you.",
+      ? <>Every time you open a new page, you'll see a friendly welcome message just for you, <SeniorName name={n} />.</>
+      : "Every time you open a new page, you'll see a friendly welcome message just for you.",
   },
   {
     target: "clock",
@@ -104,7 +104,7 @@ const STEPS: TourStep[] = [
     icon: <ConfettiIcon size={STEP_ICON_SIZE} weight="fill" color={STEP_ICON_COLOR} />,
     title: (n) => n ? <>You're all set, <SeniorName name={n} />!</> : "You're all set!",
     body: (_s, c) =>
-      `Happy browsing! If you ever get lost, just open a new tab to come back here. ${c || "Your caregiver"} can always help.`,
+      `Happy browsing! If you ever get lost, just open a new page to come back here. ${c || "Your caregiver"} can always help.`,
   },
 ]
 

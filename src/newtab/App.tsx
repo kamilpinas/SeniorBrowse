@@ -420,8 +420,11 @@ export function App() {
           maxWidth: "64rem",
           margin: "0 auto",
           width: "100%",
+          // Admin banner is ~52px tall and fixed at top. We need its full
+          // height PLUS breathing room before the greeting — otherwise the
+          // welcome heading sits glued to the banner's bottom edge.
           padding: adminMode
-            ? "clamp(3rem,5vh,4rem) clamp(1rem,2vw,2rem) clamp(0.5rem,1vh,1rem)"
+            ? "clamp(5rem,8vh,6.5rem) clamp(1rem,2vw,2rem) clamp(0.5rem,1vh,1rem)"
             : "clamp(1.5rem,2.5vh,2.5rem) clamp(1rem,2vw,2rem) clamp(0.5rem,1vh,1rem)",
           display: "flex",
           flexDirection: "column",
@@ -458,7 +461,19 @@ export function App() {
         <RecentSites />
 
         {/* N-05 + A-03..A-06 */}
-        <div className="sw-fade-up sw-stagger-4" style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div
+          className="sw-fade-up sw-stagger-4"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+            // Tiles lift translateY(-3px) on hover and cast a shadow that
+            // extends past their bounds — without this padding, the
+            // overflow:auto wrapper clips the top edge and the shadow
+            // appears cut off.
+            padding: "4px 4px 8px",
+          }}
+        >
           <ShortcutGrid adminMode={adminMode} />
         </div>
       </main>

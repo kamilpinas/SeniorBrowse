@@ -3,89 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
   <title>Warning — SeniorBrowse</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet"
+  />
+
   <style>
     :root {
-      --bg:      #f7f1e6;
-      --surface: #faf6ee;
-      --edge:    #ddd4be;
-      --text:    #2a2620;
-      --muted:   #6b6354;
-      --accent:  #c25e2a;
-      --radius:  14px;
+      --color-bg:               #f5ede0;
+      --color-surface:          #fdf9f4;
+      --color-surface-raised:   #ffffff;
+      --color-surface-edge:     #c8b49a;
+      --color-text:             #1c1814;
+      --color-text-muted:       #3a2a1c;
+      --color-text-subtle:      #5e4030;
+      --color-accent:           #9c3520;
+      --color-accent-strong:    #7a2614;
+      --color-accent-light:     #f5e0d4;
+
+      --radius-md:   16px;
+      --radius-lg:   24px;
+      --radius-pill: 9999px;
+
+      --shadow-md: 0 4px 20px rgba(28,24,20,0.10),
+                   0 2px 6px  rgba(28,24,20,0.06);
+      --shadow-lg: 0 12px 40px rgba(28,24,20,0.13),
+                   0 4px 12px rgba(28,24,20,0.07);
+
+      --font-body:    "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    html, body {
+      background: var(--color-bg);
+      background-image: radial-gradient(
+        ellipse 130% 70% at 50% -8%,
+        rgba(230, 140, 70, 0.18) 0%,
+        transparent 65%
+      );
+      color: var(--color-text);
+      font-family: var(--font-body);
       font-size: 18px;
+      line-height: 1.5;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 2rem 1.5rem;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     .card {
-      background: var(--surface);
-      border: 1.5px solid var(--edge);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      max-width: 480px;
+      position: relative;
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-surface-edge);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem 2rem;
+      max-width: 520px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 2px 20px rgba(42,38,32,0.1);
+      box-shadow: var(--shadow-lg);
     }
 
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+    .illustration {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
       display: block;
+      margin: 0 auto 0.5rem;
     }
 
     h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+      color: var(--color-text);
+    }
+
+    h1 em {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--color-accent);
+      letter-spacing: -0.01em;
+      position: relative;
+      top: 0.02em;
     }
 
     p {
-      color: var(--muted);
+      color: var(--color-text-muted);
       line-height: 1.6;
       margin-bottom: 1rem;
+      font-size: 1.05rem;
+    }
+    p.small {
+      font-size: 0.95rem;
+      color: var(--color-text-subtle);
     }
 
     .url-box {
-      background: var(--bg);
-      border: 1.5px solid var(--edge);
-      border-radius: 8px;
-      padding: 0.6rem 0.9rem;
-      font-size: 1rem;
-      color: var(--muted);
+      background: var(--color-bg);
+      border: 1.5px solid var(--color-surface-edge);
+      border-radius: var(--radius-md);
+      padding: 0.7rem 0.95rem;
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
       word-break: break-all;
-      margin-bottom: 1.75rem;
+      margin: 0.5rem 0 1.5rem;
       text-align: left;
-    }
-
-    .reason {
-      display: inline-block;
-      background: #fef3cd;
-      color: #92650a;
-      border-radius: 6px;
-      padding: 0.2rem 0.7rem;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1.25rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
     .actions {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.6rem;
     }
 
     button {
@@ -93,53 +145,81 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0.8rem 1.8rem;
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: 600;
+      padding: 0.85rem 1.8rem;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 700;
       cursor: pointer;
       border: none;
-      transition: background 0.12s, color 0.12s;
+      font-family: inherit;
+      transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s cubic-bezier(0.22,1,0.36,1);
+      min-height: 56px;
+    }
+    button:focus-visible {
+      outline: 2.5px solid var(--color-accent);
+      outline-offset: 3px;
     }
 
     #back-btn {
-      background: var(--accent);
+      background: var(--color-accent);
       color: #fff;
     }
-    #back-btn:hover { background: #a04a1c; }
+    #back-btn:hover { background: var(--color-accent-strong); transform: scale(1.02); }
+    #back-btn:active { transform: scale(0.98); }
 
     #proceed-btn {
       background: transparent;
-      color: var(--muted);
-      border: 1.5px solid var(--edge);
-      font-size: 0.9rem;
-      font-weight: 500;
+      color: var(--color-text-subtle);
+      border: 1.5px solid var(--color-surface-edge);
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-height: 48px;
     }
     #proceed-btn:hover {
-      color: var(--text);
-      background: var(--bg);
+      color: var(--color-text);
+      background: var(--color-bg);
     }
-
     #proceed-btn[disabled] {
       opacity: 0.45;
       cursor: default;
     }
+
+    .stamp {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: center;
+      opacity: 0.92;
+    }
+    .stamp img {
+      height: 56px;
+      width: auto;
+      transform: rotate(-3deg);
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <span class="icon">⚠️</span>
-    <h1>This page may not be safe</h1>
-    <p>SeniorBrowse detected a potential warning for this website.</p>
-    <div class="reason">Warning</div>
+  <main class="card">
+    <img
+      class="illustration"
+      src="/brand/illustration-blocked-safely.svg"
+      alt=""
+      aria-hidden="true"
+    />
+
+    <h1>This page may <em>not be safe</em></h1>
+    <p>We recommend going back. If you know this website is safe, you can continue.</p>
+
     <div class="url-box" id="url-display"></div>
-    <p>We recommend going back. If you know this site is safe, you can continue anyway.</p>
 
     <div class="actions">
-      <button id="back-btn">← Go back (recommended)</button>
-      <button id="proceed-btn">I understand the risk — continue anyway</button>
+      <button id="back-btn" type="button">Go back</button>
+      <button id="proceed-btn" type="button">I know this is safe — continue anyway</button>
     </div>
-  </div>
+
+    <div class="stamp">
+      <img src="/brand/stamp-protected.svg" alt="Protected by SeniorBrowse" />
+    </div>
+  </main>
 
   <script>
     const params = new URLSearchParams(location.search)
