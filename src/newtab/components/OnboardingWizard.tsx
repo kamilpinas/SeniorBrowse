@@ -6,6 +6,7 @@ import {
   ArrowRightIcon,
   ConfettiIcon,
   EnvelopeIcon,
+  HandWavingIcon,
   MapPinIcon,
   NewspaperIcon,
   PaletteIcon,
@@ -40,12 +41,33 @@ const card: React.CSSProperties = {
   border: "1.5px solid var(--color-surface-edge)",
   borderRadius: "var(--radius-lg)",
   width: "100%",
-  maxWidth: 520,
-  padding: "2.5rem 2.25rem",
+  // Wider card gives multi-item steps (size options, theme swatches, security
+  // toggles) room to lay out horizontally instead of stacking — which is what
+  // keeps the content inside one height without scrolling.
+  maxWidth: 640,
+  // One consistent height for every step. Designed around a 768px-tall
+  // viewport: at 768 the card is ~720px, which fits the tallest step without
+  // scrolling. The dots stay pinned at the top and the back/skip row at the
+  // bottom; content between them scrolls only as a fallback on shorter screens.
+  height: "min(720px, calc(100vh - 3rem))",
+  padding: "2rem 2.25rem",
   boxShadow: "0 8px 40px rgba(42,38,32,0.18)",
   display: "flex",
   flexDirection: "column",
+  gap: "1.25rem",
+  overflow: "hidden",
+}
+
+// Scrolling body that holds the active step's content. Keeps the same inter-
+// element rhythm the card used to have (gap 1.5rem) and scrolls internally.
+const stepScroll: React.CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  display: "flex",
+  flexDirection: "column",
   gap: "1.5rem",
+  paddingRight: "0.25rem",
 }
 
 const heading: React.CSSProperties = {
@@ -201,7 +223,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           aria-hidden="true"
           style={{
             width: "100%",
-            maxWidth: 280,
+            maxWidth: 200,
             height: "auto",
             display: "block",
             margin: "0 auto",
@@ -219,6 +241,41 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           only you can change the settings later.
         </p>
       </div>
+
+      {/* Pre-empt Chrome's one-time "keep / change back" prompt for the
+          new-tab override. Telling the caregiver to expect it turns a
+          scary-looking popup into an expected step. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "0.65rem",
+          padding: "0.85rem 1rem",
+          background: "var(--color-accent-xlight)",
+          border: "1.5px solid var(--color-accent-light)",
+          borderRadius: "var(--radius-md)",
+        }}
+      >
+        <HandWavingIcon
+          size={20}
+          weight="fill"
+          color="var(--color-accent)"
+          style={{ flexShrink: 0, marginTop: "0.1rem" }}
+          aria-hidden="true"
+        />
+        <p
+          style={{
+            ...body,
+            fontSize: "0.875rem",
+            margin: 0,
+            color: "var(--color-text)",
+          }}
+        >
+          Chrome may ask if you want to keep SeniorBrowse as the home page.
+          Tap <strong>Keep it</strong> to continue — this is normal.
+        </p>
+      </div>
+
       <button
         style={primaryBtn}
         onClick={onNext}
@@ -667,7 +724,15 @@ function StepShortcutSize({
         </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      {/* Two-column grid — keeps the 5 options compact instead of a tall
+          5-row stack so the step fits the card without scrolling. */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: "0.5rem",
+        }}
+      >
         {SHORTCUT_SIZES.map((size) => {
           const meta = SIZE_META[size]
           const isSelected = selected === size
@@ -847,7 +912,7 @@ function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
           aria-hidden="true"
           style={{
             width: "100%",
-            maxWidth: 240,
+            maxWidth: 170,
             height: "auto",
             display: "block",
             margin: "0 auto",
@@ -1098,27 +1163,29 @@ export function OnboardingWizard({ onComplete }: Props) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2rem",
+        padding: "1.5rem",
         overflowY: "auto",
       }}
     >
       <div style={card}>
         <Dots step={step} total={TOTAL_STEPS} />
 
-        {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
-        {step === 1 && <StepEmail onNext={handleStep1} />}
-        {step === 2 && <StepNames onNext={handleStep2} />}
-        {step === 3 && <StepShortcuts onNext={handleStep3} />}
-        {step === 4 && <StepShortcutSize onNext={handleStep4} />}
-        {step === 5 && <StepTheme initial={themeColor} onNext={handleStep5} />}
-        {step === 6 && <StepSecurity onNext={handleStep6} />}
-        {step === 7 && (
-          <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
-        )}
+        <div style={stepScroll}>
+          {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
+          {step === 1 && <StepEmail onNext={handleStep1} />}
+          {step === 2 && <StepNames onNext={handleStep2} />}
+          {step === 3 && <StepShortcuts onNext={handleStep3} />}
+          {step === 4 && <StepShortcutSize onNext={handleStep4} />}
+          {step === 5 && <StepTheme initial={themeColor} onNext={handleStep5} />}
+          {step === 6 && <StepSecurity onNext={handleStep6} />}
+          {step === 7 && (
+            <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
+          )}
+        </div>
 
         {/* Back / skip row for optional steps */}
         {step >= 1 && step <= 7 && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.25rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             {/* ← Back: go to previous step */}
             <button
               onClick={() => setStep((s) => s - 1)}
