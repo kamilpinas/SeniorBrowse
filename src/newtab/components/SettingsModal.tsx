@@ -2033,12 +2033,14 @@ function TrialTab() {
         body: JSON.stringify({ licenseKey: cached.licenseKey }),
       })
       if (!res.ok) return
+      // `email` is no longer returned by validate-license (audit #2); the
+      // locally-cached email is kept instead. Typed optional to match.
       const data = await res.json() as {
         status: string
         daysLeft: number | null
         trialEndsAt: string | null
         currentPeriodEndsAt: string | null
-        email: string
+        email?: string
       }
       const updated: Subscription = {
         ...cached,

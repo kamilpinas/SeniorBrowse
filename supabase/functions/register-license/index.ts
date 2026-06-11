@@ -9,11 +9,17 @@
 //   - Disposable/throwaway email domain → 403 reason:"email"
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { clientIp, tooManyRequests, underRateLimit } from "../_shared/rateLimit.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
+
+// Registration happens once per install — a low ceiling blocks trial spam
+// while leaving room for a few legitimate retries / shared-NAT households.
+const RATE_LIMIT = 10
+const RATE_WINDOW_SECONDS = 3600
 
 // Common disposable / throwaway email domains.
 // This list catches the most popular services; extend as needed.
@@ -51,6 +57,20 @@ Deno.serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders })
   }
 
+  const supabase = createClient(
+    Deno.env.get("SBASE_URL")!,
+    Deno.env.get("SBASE_SERVICE_ROLE_KEY")!,
+  )
+
+  // Per-IP throttle — blocks automated trial-creation spam.
+  const allowed = await underRateLimit(
+    supabase,
+    `register-license:${clientIp(req)}`,
+    RATE_LIMIT,
+    RATE_WINDOW_SECONDS,
+  )
+  if (!allowed) return tooManyRequests(corsHeaders)
+
   try {
     const { email, installId } = await req.json() as {
       email?: string
@@ -69,11 +89,8 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    const supabase = createClient(
-      Deno.env.get("SBASE_URL")!,
-      Deno.env.get("SBASE_SERVICE_ROLE_KEY")!,
-    )
-
+    // `supabase` (service-role client) is created above for the rate limiter
+    // and reused here.
     const normalizedEmail = email.trim().toLowerCase()
 
     // ── Check if this device has already used a trial ─────────────────────────

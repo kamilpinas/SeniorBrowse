@@ -125,18 +125,41 @@ chrome.runtime.onMessage.addListener(
 chrome.runtime.onMessage.addListener(
   (
     msg: IncomingMessage,
-    _sender: chrome.runtime.MessageSender,
+    sender: chrome.runtime.MessageSender,
     sendResponse: (r: MessageResponse) => void,
   ) => {
-    void handleMessage(msg).then(sendResponse)
+    void handleMessage(msg, sender).then(sendResponse)
     return true // keep channel open for async response
   },
 )
 
-async function handleMessage(msg: IncomingMessage): Promise<MessageResponse> {
+// True only for messages from our own extension pages (newtab, side panel,
+// settings). Their sender.url lives under the extension origin
+// (chrome-extension://<id>/...). Content scripts run in web pages, so their
+// sender.url is the http(s) page URL — Chrome sets this, the page can't forge
+// it. We deliberately do NOT check sender.tab: the newtab override page runs
+// in a tab, so sender.tab is populated for it too.
+function isExtensionPageSender(sender: chrome.runtime.MessageSender): boolean {
+  const origin = chrome.runtime.getURL("")
+  return (
+    sender.id === chrome.runtime.id &&
+    !!sender.url &&
+    sender.url.startsWith(origin)
+  )
+}
+
+async function handleMessage(
+  msg: IncomingMessage,
+  sender: chrome.runtime.MessageSender,
+): Promise<MessageResponse> {
   try {
     switch (msg.type) {
       case "TOGGLE_ADMIN_MODE": {
+        // Admin state must only change from an extension page (gated by the
+        // PIN UI). Reject content scripts / any other context (audit #4).
+        if (!isExtensionPageSender(sender)) {
+          return { ok: false, error: "Forbidden" }
+        }
         const current = await storage.session.get("adminModeActive")
         const next = !current
         await storage.session.set("adminModeActive", next)
@@ -145,6 +168,9 @@ async function handleMessage(msg: IncomingMessage): Promise<MessageResponse> {
       }
 
       case "SET_ADMIN_MODE": {
+        if (!isExtensionPageSender(sender)) {
+          return { ok: false, error: "Forbidden" }
+        }
         await storage.session.set("adminModeActive", msg.payload.active)
         broadcastAdminMode(msg.payload.active)
         return { ok: true, data: { active: msg.payload.active } }

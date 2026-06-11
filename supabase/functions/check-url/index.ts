@@ -8,12 +8,24 @@
 // Always fails open ("safe") on any error so a Supabase outage never blocks
 // the senior from browsing.
 
+import {
+  clientIp,
+  serviceClient,
+  tooManyRequests,
+  underRateLimit,
+} from "../_shared/rateLimit.ts"
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
 const SB_ENDPOINT = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
+
+// Generous enough for real browsing (the extension caches per-URL, so this is
+// roughly unique-URLs-per-minute), tight enough to cap quota abuse.
+const RATE_LIMIT = 100
+const RATE_WINDOW_SECONDS = 60
 
 // Social engineering → soft warn (user can bypass).
 // Malware / PHA / unwanted software → hard block.
@@ -23,6 +35,15 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
+
+  // Per-IP throttle — this endpoint bills against the Safe Browsing quota.
+  const allowed = await underRateLimit(
+    serviceClient(),
+    `check-url:${clientIp(req)}`,
+    RATE_LIMIT,
+    RATE_WINDOW_SECONDS,
+  )
+  if (!allowed) return tooManyRequests(corsHeaders)
 
   try {
     const { url } = (await req.json()) as { url?: string }

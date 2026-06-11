@@ -3,16 +3,36 @@
 // Returns the status so the extension knows whether to lock or allow access.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { clientIp, tooManyRequests, underRateLimit } from "../_shared/rateLimit.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
+// The extension validates ~once per 24h; the settings "Refresh" button can
+// add a few more. 30/hour/IP is generous for humans, hostile to enumeration.
+const RATE_LIMIT = 30
+const RATE_WINDOW_SECONDS = 3600
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
+
+  const supabase = createClient(
+    Deno.env.get("SBASE_URL")!,
+    Deno.env.get("SBASE_SERVICE_ROLE_KEY")!,
+  )
+
+  // Per-IP throttle — frustrates license-key enumeration.
+  const allowed = await underRateLimit(
+    supabase,
+    `validate-license:${clientIp(req)}`,
+    RATE_LIMIT,
+    RATE_WINDOW_SECONDS,
+  )
+  if (!allowed) return tooManyRequests(corsHeaders)
 
   try {
     const { licenseKey } = await req.json() as { licenseKey?: string }
@@ -21,14 +41,13 @@ Deno.serve(async (req: Request) => {
       return json({ error: "licenseKey is required." }, 400)
     }
 
-    const supabase = createClient(
-      Deno.env.get("SBASE_URL")!,
-      Deno.env.get("SBASE_SERVICE_ROLE_KEY")!,
-    )
-
+    // Note: `email` is intentionally NOT selected or returned (audit #2).
+    // The extension already stores the caregiver email locally from
+    // registration; echoing it here would let anyone holding a license key
+    // recover the associated email from this unauthenticated endpoint.
     const { data: license } = await supabase
       .from("licenses")
-      .select("email, status, trial_ends_at, current_period_ends_at, created_at")
+      .select("status, trial_ends_at, current_period_ends_at, created_at")
       .eq("license_key", licenseKey)
       .maybeSingle()
 
@@ -81,7 +100,6 @@ Deno.serve(async (req: Request) => {
     return json({
       status,
       daysLeft,
-      email: license.email,
       trialEndsAt: license.trial_ends_at ?? null,
       currentPeriodEndsAt: license.current_period_ends_at ?? null,
       createdAt: license.created_at,
