@@ -9,6 +9,7 @@ import {
   LockSimpleIcon,
   MoonIcon,
   SunIcon,
+  XIcon,
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
 import { WelcomeBanner } from "./components/WelcomeBanner"
@@ -296,6 +297,50 @@ export function App() {
                 Monthly — $4.99 / month
               </a>
             </div>
+          )}
+
+          {/* Close the helper panel — the panel has no obvious ✕ of its own,
+              and while the newtab is paused the senior shouldn't feel
+              trapped. Browsing other sites keeps working when expired;
+              this just gives the screen space back. */}
+          {panelOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                chrome.runtime
+                  .sendMessage({ type: "CLOSE_PANEL_REQUEST" })
+                  .catch(() => {})
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.75rem 1.5rem",
+                minHeight: 48,
+                background: "transparent",
+                color: "var(--color-text-muted)",
+                border: "1.5px solid var(--color-surface-edge)",
+                borderRadius: "var(--radius-md)",
+                fontWeight: 600,
+                fontSize: "1rem",
+                fontFamily: "inherit",
+                cursor: "pointer",
+                transition: "background 0.18s, color 0.18s, border-color 0.18s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--color-surface)"
+                e.currentTarget.style.color = "var(--color-text)"
+                e.currentTarget.style.borderColor = "var(--color-surface-edge-mid)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent"
+                e.currentTarget.style.color = "var(--color-text-muted)"
+                e.currentTarget.style.borderColor = "var(--color-surface-edge)"
+              }}
+            >
+              <XIcon size={18} weight="bold" />
+              Close the helper panel
+            </button>
           )}
         </div>
       </main>
