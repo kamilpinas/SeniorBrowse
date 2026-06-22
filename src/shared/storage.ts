@@ -10,6 +10,14 @@ import type {
   Subscription,
 } from './types'
 
+/** Persisted PIN brute-force counter — survives reload/restart so a wrong
+ *  PIN streak can't be reset just by closing the browser (see AdminPinModal). */
+export interface PinLockoutState {
+  failCount: number
+  /** Epoch ms; null when not currently locked. */
+  lockedUntil: number | null
+}
+
 export interface LocalStore {
   config: Config
   shortcuts: Shortcut[]
@@ -18,6 +26,7 @@ export interface LocalStore {
   subscription: Subscription | null
   /** Stable UUID generated on first install — sent with license registration to prevent device reuse of free trial. */
   installId: string
+  pinLockout: PinLockoutState
 }
 
 export interface SessionStore {
@@ -50,6 +59,7 @@ const DEFAULTS: { local: LocalStore; session: SessionStore } = {
     activityLog: [],
     subscription: null,
     installId: "",
+    pinLockout: { failCount: 0, lockedUntil: null },
   },
   session: {
     currentFontSize: null,

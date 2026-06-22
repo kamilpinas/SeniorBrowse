@@ -183,12 +183,24 @@ async function handleMessage(
       }
 
       case "LOG_ACTIVITY": {
+        // Only our own extension pages (side panel "save") write log entries
+        // this way — gate it the same as the admin-mode messages so nothing
+        // else can inject fabricated activity-log rows.
+        if (!isExtensionPageSender(sender)) {
+          return { ok: false, error: "Forbidden" }
+        }
         const { url, title, type } = msg.payload
         await logActivity(url, title, type)
         return { ok: true, data: undefined }
       }
 
       case "BYPASS_URL": {
+        // Only warn.html (an extension page) ever sends this — it's what
+        // lets the senior's "continue anyway" choice skip Safe Browsing for
+        // the rest of the session, so it must not be forgeable by web content.
+        if (!isExtensionPageSender(sender)) {
+          return { ok: false, error: "Forbidden" }
+        }
         const { url } = msg.payload
         const bypassed = await storage.session.get("bypassedUrls")
         if (!bypassed.includes(url)) {

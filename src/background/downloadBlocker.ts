@@ -2,27 +2,26 @@
 // chrome.downloads.onCreated fires before the file is written to disk, so
 // cancelling here is safe and leaves no partial file.
 
-/** Filename prefix used by Settings → Save backup. Allow-listed so the
- *  blocker doesn't cancel our own backup file when blockDownloads is on. */
-const BACKUP_FILENAME_PREFIX = "seniorbrowse-backup-"
-
 export async function handleDownload(
   item: chrome.downloads.DownloadItem,
   blockDownloads: boolean,
 ): Promise<void> {
   if (!blockDownloads) return
 
-  // Allow the caregiver's own backup file — it's initiated from inside the
-  // extension and the filename is set by our own code, so it's trusted.
-  // Without this, "Save backup" appears to do nothing because the blocker
-  // cancels the download before the file lands.
-  const filename = (item.filename || "").toLowerCase()
-  // item.filename may be empty on Created; fall back to checking the URL too.
+  // Allow the caregiver's own backup file — Settings → Save backup creates
+  // it via URL.createObjectURL() inside the extension's own page, so its
+  // download URL is always blob:chrome-extension://<this-extension-id>/...
+  // A web page cannot forge a blob URL in another origin's namespace, so
+  // this check can't be spoofed by a malicious site.
+  //
+  // This used to ALSO allow-list any download whose suggested filename
+  // contained "seniorbrowse-backup-" — but that string comes from the
+  // page's own <a download="..."> attribute (or a Content-Disposition
+  // header), which a malicious site fully controls. A page naming its
+  // payload "seniorbrowse-backup-update.exe" would have sailed straight
+  // through the blocker. Only the unspoofable blob-URL check is kept.
   const url = (item.url || "").toLowerCase()
-  if (
-    filename.includes(BACKUP_FILENAME_PREFIX) ||
-    url.startsWith("blob:chrome-extension://")
-  ) {
+  if (url.startsWith("blob:chrome-extension://")) {
     return
   }
 

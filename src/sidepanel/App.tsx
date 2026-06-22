@@ -1839,7 +1839,7 @@ export function App() {
     if (!tab) return
     const url = tab.url ?? "",
       title = tab.title ?? url
-    if (!url.startsWith("http")) {
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
       showToast(
         "This page can't be saved. Try saving a website you're visiting.",
         "error",

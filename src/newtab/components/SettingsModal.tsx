@@ -24,11 +24,13 @@ import {
   ShieldCheckIcon,
   StarIcon,
   SunIcon,
+  TrashIcon,
   UserIcon,
   XIcon,
 } from "@phosphor-icons/react"
 import { storage, type DeepPartial } from "@shared/storage"
-import { SUSPICIOUS_LINK_MODES } from "@shared/constants"
+import { SUSPICIOUS_LINK_MODES, MAX_LOG_AGE_DAYS } from "@shared/constants"
+import { hashPin } from "@shared/pin"
 import { FloatingToast, useToast } from "@shared/toast"
 import type { ToastType } from "@shared/toast"
 import type {
@@ -283,8 +285,10 @@ function PinChangeWidget({
       }, 100)
     } else if (step === "confirm") {
       if (digits.join("") === firstPinRef.current) {
-        void storage.local
-          .update("config", { adminPin: firstPinRef.current })
+        void hashPin(firstPinRef.current)
+          .then(({ pinHash, pinSalt }) =>
+            storage.local.update("config", { pinHash, pinSalt }),
+          )
           .then(() => {
             showToast("PIN changed successfully")
             reset()
@@ -1815,10 +1819,15 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
 }
 const PAGE_SIZE = 50
 
-function ActivityLogTab() {
+function ActivityLogTab({
+  showToast,
+}: {
+  showToast: (msg: string, type?: ToastType) => void
+}) {
   const [log, setLog] = useState<ActivityLogEntry[]>([])
   const [search, setSearch] = useState("")
   const [shown, setShown] = useState(PAGE_SIZE)
+  const [confirmingClear, setConfirmingClear] = useState(false)
 
   useEffect(() => {
     storage.local
@@ -1826,6 +1835,13 @@ function ActivityLogTab() {
       .then((all) => setLog([...all].reverse()))
       .catch(() => {})
   }, [])
+
+  const clearLog = async () => {
+    await storage.local.set("activityLog", [])
+    setLog([])
+    setConfirmingClear(false)
+    showToast("Activity log cleared")
+  }
 
   if (log.length === 0) {
     return (
@@ -1881,6 +1897,82 @@ function ActivityLogTab() {
             fontFamily: "inherit",
           }}
         />
+      </div>
+
+      {/* Retention note + manual clear — entries auto-expire after
+          MAX_LOG_AGE_DAYS, but the caregiver can also clear everything now. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          marginBottom: "0.25rem",
+        }}
+      >
+        <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+          Kept for {MAX_LOG_AGE_DAYS} days, then removed automatically.
+        </span>
+        {confirmingClear ? (
+          <span style={{ display: "flex", gap: "0.4rem", flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => void clearLog()}
+              style={{
+                padding: "0.3rem 0.6rem",
+                borderRadius: 8,
+                border: "1.5px solid var(--color-danger)",
+                background: "var(--color-danger-light)",
+                color: "var(--color-danger)",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              Confirm clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingClear(false)}
+              style={{
+                padding: "0.3rem 0.6rem",
+                borderRadius: 8,
+                border: "1.5px solid var(--color-surface-edge)",
+                background: "transparent",
+                color: "var(--color-text-muted)",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              Cancel
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmingClear(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem",
+              padding: "0.3rem 0.6rem",
+              borderRadius: 8,
+              border: "1.5px solid var(--color-surface-edge)",
+              background: "transparent",
+              color: "var(--color-text-muted)",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              flexShrink: 0,
+            }}
+          >
+            <TrashIcon size={13} /> Clear log
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 && (
@@ -2714,7 +2806,9 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
             )}
             {activeTab === "security" && <SecurityTab showToast={showToast} />}
             {activeTab === "savedLinks" && <SavedLinksTab />}
-            {activeTab === "activityLog" && <ActivityLogTab />}
+            {activeTab === "activityLog" && (
+              <ActivityLogTab showToast={showToast} />
+            )}
             {activeTab === "trial" && <TrialTab />}
           </div>
         </section>

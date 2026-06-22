@@ -221,30 +221,6 @@
     </div>
   </main>
 
-  <script>
-    const params = new URLSearchParams(location.search)
-    const url = params.get('url') || ''
-
-    document.getElementById('url-display').textContent = url || '(unknown page)'
-
-    document.getElementById('back-btn').addEventListener('click', () => {
-      if (history.length > 1) history.back()
-      else window.close()
-    })
-
-    document.getElementById('proceed-btn').addEventListener('click', async () => {
-      const btn = document.getElementById('proceed-btn')
-      btn.disabled = true
-      btn.textContent = 'Opening…'
-
-      try {
-        await chrome.runtime.sendMessage({ type: 'BYPASS_URL', payload: { url } })
-      } catch {
-        // Service worker may already know; proceed regardless.
-      }
-
-      location.href = url
-    })
-  </script>
+  <script src="warn.js"></script>
 </body>
 </html>

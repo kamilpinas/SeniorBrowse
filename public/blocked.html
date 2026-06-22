@@ -208,16 +208,6 @@
     </div>
   </main>
 
-  <script>
-    const params = new URLSearchParams(location.search)
-    const url = params.get('url') || ''
-
-    document.getElementById('url-display').textContent = url || '(unknown page)'
-
-    document.getElementById('back-btn').addEventListener('click', () => {
-      if (history.length > 1) history.back()
-      else window.close()
-    })
-  </script>
+  <script src="blocked.js"></script>
 </body>
 </html>

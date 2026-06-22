@@ -44,8 +44,10 @@ export interface Config {
   onboardingDone: boolean
   /** Set to true after the side-panel intro wizard is dismissed. */
   panelWizardDone: boolean
-  /** 4-digit numeric string used to enter admin/caregiver mode. */
-  adminPin: string
+  /** PBKDF2-SHA256 hash of the caregiver's PIN — the raw PIN is never stored (see shared/pin.ts). */
+  pinHash: string
+  /** Random hex salt used to derive pinHash. */
+  pinSalt: string
   /** Global display size applied to every shortcut tile. */
   shortcutSize: ShortcutSize
   /** When false the ☰ Panel button is hidden on all pages (caregiver toggle). */
@@ -73,8 +75,6 @@ export interface SavedLink {
   id: string
   url: string
   title: string
-  /** Base64 PNG from html2canvas, optional. */
-  thumbnail?: string
   /** ISO 8601 timestamp. */
   savedAt: string
 }

@@ -1,8 +1,9 @@
-// B-04: Append entries to the activity log, capped at MAX_LOG_ENTRIES.
-// Oldest entries are dropped first when the cap is reached.
+// B-04: Append entries to the activity log, capped at MAX_LOG_ENTRIES and
+// pruned of anything older than MAX_LOG_AGE_DAYS. Oldest entries are dropped
+// first when the count cap is reached.
 
 import { storage } from '@shared/storage'
-import { MAX_LOG_ENTRIES } from '@shared/constants'
+import { MAX_LOG_ENTRIES, MAX_LOG_AGE_DAYS } from '@shared/constants'
 import type { ActivityLogEntry, ActivityType } from '@shared/types'
 
 export async function logActivity(
@@ -18,8 +19,10 @@ export async function logActivity(
       visitedAt: new Date().toISOString(),
       type,
     }
-    // Append and trim to cap — slice(-N) keeps the last N items.
-    const next = [...log, entry].slice(-MAX_LOG_ENTRIES)
+    const cutoff = Date.now() - MAX_LOG_AGE_DAYS * 24 * 60 * 60 * 1000
+    const next = [...log, entry]
+      .filter((e) => new Date(e.visitedAt).getTime() >= cutoff)
+      .slice(-MAX_LOG_ENTRIES)
     await storage.local.set('activityLog', next)
   } catch (err) {
     console.warn('[SeniorBrowse] activity log write failed:', err)

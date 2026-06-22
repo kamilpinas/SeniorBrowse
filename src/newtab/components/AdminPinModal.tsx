@@ -1,10 +1,18 @@
 // PIN entry modal for caregiver admin access.
 // Large-button numpad. Auto-submits on 4th digit. Shakes on wrong PIN.
-// Locks for 30 seconds after 5 consecutive failed attempts (MF-08).
+//
+// Lockout state is persisted to storage.local (not React state) so a fail
+// streak survives a page reload or browser restart — previously the counter
+// lived only in memory, so restarting the browser reset it to zero and gave
+// an attacker an unlimited number of 5-guess bursts. The lockout duration
+// also grows with the cumulative fail count instead of staying fixed at 30s,
+// and the counter is only cleared by a correct PIN, never by a lockout
+// simply expiring.
 
 import { useEffect, useRef, useState } from "react"
 import { storage } from "@shared/storage"
 import { useFocusTrap } from "@shared/useFocusTrap"
+import { verifyPin } from "@shared/pin"
 
 interface Props {
   onSuccess: () => void
@@ -19,15 +27,35 @@ const NUMPAD_ROWS = [
 ]
 
 const MAX_ATTEMPTS = 5
-const LOCKOUT_SECONDS = 30
+// Lockout length per completed 5-attempt band: 30s, 1m, 5m, 30m, capping at 1h.
+const LOCKOUT_SCHEDULE_SECONDS = [30, 60, 5 * 60, 30 * 60, 60 * 60]
+
+function lockDurationSeconds(failCount: number): number {
+  const band = Math.floor(failCount / MAX_ATTEMPTS) - 1
+  const index = Math.min(Math.max(band, 0), LOCKOUT_SCHEDULE_SECONDS.length - 1)
+  return LOCKOUT_SCHEDULE_SECONDS[index] ?? LOCKOUT_SCHEDULE_SECONDS[0]!
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`
+  if (seconds < 3600) return `${Math.ceil(seconds / 60)} min`
+  return `${Math.ceil(seconds / 3600)} hr`
+}
+
+function formatClock(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, "0")}`
+}
 
 export function AdminPinModal({ onSuccess, onCancel }: Props) {
   const [digits, setDigits] = useState<string[]>([])
   const [shake, setShake] = useState(false)
   const [error, setError] = useState("")
-  const [attempts, setAttempts] = useState(0)
+  const [failCount, setFailCount] = useState(0)
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
   const [countdown, setCountdown] = useState(0)
+  const [loaded, setLoaded] = useState(false)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   // A2: trap keyboard focus inside the card.
   const cardRef = useRef<HTMLDivElement>(null)
@@ -35,15 +63,32 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
 
   const isLocked = lockedUntil !== null && Date.now() < lockedUntil
 
-  // Countdown ticker while locked
+  // Seed fail count / lockout from persisted storage on mount.
+  useEffect(() => {
+    storage.local
+      .get("pinLockout")
+      .then((state) => {
+        setFailCount(state.failCount)
+        setLockedUntil(
+          state.lockedUntil && state.lockedUntil > Date.now()
+            ? state.lockedUntil
+            : null,
+        )
+      })
+      .finally(() => setLoaded(true))
+      .catch(() => setLoaded(true))
+  }, [])
+
+  // Countdown ticker while locked. Expiry only unlocks input — it never
+  // clears failCount, so the next band picks up where this one left off.
   useEffect(() => {
     if (!lockedUntil) return
     const tick = () => {
       const remaining = Math.ceil((lockedUntil - Date.now()) / 1000)
       if (remaining <= 0) {
         setLockedUntil(null)
-        setAttempts(0)
         setCountdown(0)
+        void storage.local.update("pinLockout", { lockedUntil: null })
         if (countdownRef.current) clearInterval(countdownRef.current)
       } else {
         setCountdown(remaining)
@@ -57,11 +102,11 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
   }, [lockedUntil])
 
   useEffect(() => {
-    if (digits.length === 4 && !isLocked) {
+    if (digits.length === 4 && !isLocked && loaded) {
       void verify(digits.join(""))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [digits])
+  }, [digits, loaded])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -93,17 +138,35 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
   const verify = async (pin: string) => {
     try {
       const config = await storage.local.get("config")
-      if (pin === config.adminPin) {
+      if (!config.pinHash) {
+        triggerError("No PIN has been set yet — finish setup first")
+        return
+      }
+      const ok = await verifyPin(pin, config.pinHash, config.pinSalt)
+      if (ok) {
+        setFailCount(0)
+        setLockedUntil(null)
+        await storage.local.set("pinLockout", { failCount: 0, lockedUntil: null })
         onSuccess()
       } else {
-        const nextAttempts = attempts + 1
-        setAttempts(nextAttempts)
-        if (nextAttempts >= MAX_ATTEMPTS) {
-          const until = Date.now() + LOCKOUT_SECONDS * 1000
+        const nextFailCount = failCount + 1
+        setFailCount(nextFailCount)
+        if (nextFailCount % MAX_ATTEMPTS === 0) {
+          const seconds = lockDurationSeconds(nextFailCount)
+          const until = Date.now() + seconds * 1000
           setLockedUntil(until)
-          triggerError(`Too many attempts — wait ${LOCKOUT_SECONDS}s`)
+          await storage.local.set("pinLockout", {
+            failCount: nextFailCount,
+            lockedUntil: until,
+          })
+          triggerError(`Too many attempts — wait ${formatDuration(seconds)}`)
         } else {
-          triggerError(`Incorrect PIN (${MAX_ATTEMPTS - nextAttempts} left)`)
+          await storage.local.set("pinLockout", {
+            failCount: nextFailCount,
+            lockedUntil: null,
+          })
+          const left = MAX_ATTEMPTS - (nextFailCount % MAX_ATTEMPTS)
+          triggerError(`Incorrect PIN (${left} left)`)
         }
       }
     } catch {
@@ -122,7 +185,7 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
   }
 
   // Show recovery hint after the first wrong attempt.
-  const showRecoveryHint = attempts >= 1 && !isLocked
+  const showRecoveryHint = failCount >= 1 && !isLocked
 
   return (
     /* Backdrop — solid overlay (no blur, consistent with settings modal) */
@@ -262,7 +325,9 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
                 color: "var(--color-accent)",
               }}
             >
-              {isLocked ? `Too many attempts — try again in ${countdown}s` : error}
+              {isLocked
+                ? `Too many attempts — try again in ${formatDuration(countdown)}`
+                : error}
             </p>
           )}
         </div>
@@ -282,10 +347,10 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
             }}
           >
             <span style={{ fontSize: "3rem", fontWeight: 800, color: "var(--color-accent)", lineHeight: 1 }}>
-              {countdown}
+              {countdown < 60 ? countdown : formatClock(countdown)}
             </span>
             <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
-              seconds remaining
+              {countdown < 60 ? "seconds remaining" : "remaining"}
             </span>
           </div>
         ) : (
@@ -358,11 +423,9 @@ export function AdminPinModal({ onSuccess, onCancel }: Props) {
               textAlign: "center",
             }}
           >
-            Forgot your PIN?{" "}
-            <strong style={{ color: "var(--color-text)" }}>
-              The original default is 1234.
-            </strong>{" "}
-            If you changed it, open Settings and look under Profile to set a new one.
+            Forgot your PIN? There's no master override — if you can't
+            recall it, remove and reinstall the extension, then restore
+            your settings from a backup and choose a new PIN during setup.
           </p>
         )}
       </div>

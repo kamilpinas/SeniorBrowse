@@ -9,17 +9,18 @@ import type {
   ShortcutSize,
   SuspiciousLinkMode,
   ActivityType,
-  SubscriptionStatus,
-  Theme,
   ThemeColor,
 } from "./types"
 
 export const MAX_LOG_ENTRIES = 1000
+// Activity log entries older than this are dropped on every write, so the
+// log can't grow into an indefinite record of everywhere the senior has
+// browsed — it's a recent-activity view for the caregiver, not an archive.
+export const MAX_LOG_AGE_DAYS = 90
 
 // Trial flow — server-enforced via Supabase edge functions.
 export const TRIAL_DAYS = 7
 export const GRACE_DAYS = 3
-export const TRIAL_WARNING_DAYS = 2
 
 // How often the extension re-validates the license with the server (ms).
 export const LICENSE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
@@ -33,7 +34,6 @@ export const UNDO_TOAST_MS = 5000
 
 // Value-list enums (runtime arrays paired with string-union types).
 export const FONT_SIZES: readonly FontSize[] = ["normal", "large", "xlarge"]
-export const THEMES: readonly Theme[] = ["light", "dark"]
 export const THEME_COLORS: readonly ThemeColor[] = ["red", "blue", "green"]
 
 /** Accent swatch colour shown in the theme picker — matches the active light-mode --color-accent. */
@@ -66,13 +66,6 @@ export const ACTIVITY_TYPES: readonly ActivityType[] = [
   "visit",
   "search",
   "save",
-]
-export const SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [
-  "trial",
-  "active",
-  "grace",
-  "expired",
-  "not_found",
 ]
 
 // User-visible font size labels — shown on the panel zoom button (P-04).
@@ -132,7 +125,11 @@ export const DEFAULT_CONFIG: Config = {
   panelButtons: DEFAULT_PANEL_BUTTONS,
   onboardingDone: false,
   panelWizardDone: false,
-  adminPin: "1234",
+  // No default PIN — the caregiver must choose one during onboarding
+  // (see OnboardingWizard's StepPin). An empty hash means "not set yet";
+  // verifyPin() always rejects in that state.
+  pinHash: "",
+  pinSalt: "",
   shortcutSize: "medium",
   panelEnabled: true,
   theme: "light",
