@@ -20,5 +20,8 @@ Thumbs.db
 # Vite cache
 .vite/
 
+# Test coverage reports
+coverage/
+
 # Supabase local temp files (contain private project ref and version data)
 supabase/.temp/
