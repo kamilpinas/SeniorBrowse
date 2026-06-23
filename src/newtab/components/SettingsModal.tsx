@@ -30,6 +30,7 @@ import {
 } from "@phosphor-icons/react"
 import { storage, type DeepPartial } from "@shared/storage"
 import { SUSPICIOUS_LINK_MODES, MAX_LOG_AGE_DAYS } from "@shared/constants"
+import { getCheckoutUrls } from "@shared/checkout"
 import { hashPin } from "@shared/pin"
 import { FloatingToast, useToast } from "@shared/toast"
 import type { ToastType } from "@shared/toast"
@@ -2168,14 +2169,7 @@ function TrialTab() {
       : 0)
   const st = STATUS_STYLE[sub.status] ?? STATUS_STYLE["not_found"]!
 
-  const storeSlug = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID ?? ""
-  const monthlyId = import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
-  const yearlyId = import.meta.env.VITE_LEMON_SQUEEZY_YEARLY_VARIANT_ID ?? ""
-  const emailParam = sub.email
-    ? `&checkout[custom][email]=${encodeURIComponent(sub.email)}`
-    : ""
-  const monthlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${monthlyId}?${emailParam}`
-  const yearlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${yearlyId}?${emailParam}`
+  const { monthlyUrl, yearlyUrl, configured } = getCheckoutUrls(sub.email)
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -2245,7 +2239,7 @@ function TrialTab() {
       </div>
 
       {/* Subscribe CTA */}
-      {monthlyId && (sub.status === "trial" || sub.status === "grace" || sub.status === "expired") && (
+      {configured && (sub.status === "trial" || sub.status === "grace" || sub.status === "expired") && (
         <div
           style={{
             padding: "1.2rem",

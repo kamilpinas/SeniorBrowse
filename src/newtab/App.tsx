@@ -12,6 +12,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
+import { getCheckoutUrls } from "@shared/checkout"
 import { WelcomeBanner } from "./components/WelcomeBanner"
 import { Clock } from "./components/Clock"
 import { SearchBar } from "./components/SearchBar"
@@ -147,15 +148,7 @@ export function App() {
 
   // U-02: expired screen — senior sees "needs attention"; caregiver sees subscribe options
   if (ready && isExpired) {
-    const emailParam = accountEmail
-      ? `&checkout[custom][email]=${encodeURIComponent(accountEmail)}`
-      : ""
-    const storeSlug = import.meta.env.VITE_LEMON_SQUEEZY_STORE_ID ?? ""
-    const monthlyId =
-      import.meta.env.VITE_LEMON_SQUEEZY_MONTHLY_VARIANT_ID ?? ""
-    const yearlyId = import.meta.env.VITE_LEMON_SQUEEZY_YEARLY_VARIANT_ID ?? ""
-    const monthlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${monthlyId}?${emailParam}`
-    const yearlyUrl = `https://${storeSlug}.lemonsqueezy.com/buy/${yearlyId}?${emailParam}`
+    const { monthlyUrl, yearlyUrl, configured } = getCheckoutUrls(accountEmail)
 
     return (
       <main
@@ -213,7 +206,7 @@ export function App() {
           </div>
 
           {/* Caregiver-only section — labelled so seniors don't worry about it */}
-          {monthlyId && (
+          {configured && (
             <div
               style={{
                 width: "100%",
