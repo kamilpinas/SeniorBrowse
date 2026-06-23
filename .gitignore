@@ -23,5 +23,9 @@ Thumbs.db
 # Test coverage reports
 coverage/
 
+# Playwright E2E output
+playwright-report/
+test-results/
+
 # Supabase local temp files (contain private project ref and version data)
 supabase/.temp/

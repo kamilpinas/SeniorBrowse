@@ -2193,10 +2193,11 @@ export function App() {
             {visible("exit") && (
               <Tile
                 id="exit"
-                label={label(
-                  "exit",
-                  isLastTab ? "CLOSE BROWSER" : "CLOSE PAGE",
-                )}
+                // isLastTab always wins, even over a caregiver-customised
+                // label — label("exit", ...)'s fallback never applies here
+                // since DEFAULT_PANEL_BUTTONS.exit.label is never nullish,
+                // and this warning must never be hidden by a customisation.
+                label={isLastTab ? "CLOSE BROWSER" : label("exit", "CLOSE PAGE")}
                 icon={<XCircleIcon size={28} weight="bold" />}
                 onClick={handleExit}
                 variant="danger"

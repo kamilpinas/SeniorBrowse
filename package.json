@@ -15,7 +15,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
