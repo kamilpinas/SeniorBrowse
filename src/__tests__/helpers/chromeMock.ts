@@ -46,6 +46,7 @@ export function createChromeMock() {
         addListener: vi.fn((fn: typeof onMessageListeners[number]) => {
           onMessageListeners.push(fn)
         }),
+        removeListener: vi.fn(),
       },
       sendMessage: vi.fn(async () => undefined),
     },
