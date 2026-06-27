@@ -1,0 +1,54 @@
+/* Shared design tokens (colors, typography, geometry, elevation).
+   Used by src/newtab/index.html and public/blocked.html. */
+
+:root {
+  color-scheme: light;
+
+  /* ── Palette ──────────────────────────────────────────── */
+  --color-bg:               #f5ede0;
+  --color-surface:          #fdf9f4;
+  --color-surface-raised:   #ffffff;
+  --color-surface-edge:     #c8b49a;
+  --color-surface-edge-mid: #a89078;
+
+  --color-text:             #1c1814;
+  --color-text-muted:       #3a2a1c;
+  --color-text-subtle:      #5e4030;
+
+  --color-accent:           #9c3520;
+  --color-accent-strong:    #7a2614;
+  --color-accent-light:     #f5e0d4;
+  --color-accent-xlight:    #fdf0eb;
+
+  --color-success:          #1e6e4a;
+  --color-success-light:    #d8f0e8;
+
+  --color-danger:           #b82020;
+  --color-danger-light:     #fce4ec;
+
+  /* ── Typography ───────────────────────────────────────── */
+  --font-body: 'Outfit', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, 'Times New Roman', serif;
+
+  /* ── Geometry ─────────────────────────────────────────── */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation system ─────────────────────────────────── */
+  --shadow-xs: 0 1px 3px rgba(28, 24, 20, 0.06);
+  --shadow-sm: 0 2px 8px  rgba(28, 24, 20, 0.08),
+               0 1px 2px  rgba(28, 24, 20, 0.04);
+  --shadow-md: 0 4px 20px rgba(28, 24, 20, 0.10),
+               0 2px 6px  rgba(28, 24, 20, 0.06);
+  --shadow-lg: 0 12px 40px rgba(28, 24, 20, 0.13),
+               0 4px  12px rgba(28, 24, 20, 0.07);
+  --shadow-xl: 0 24px 64px rgba(28, 24, 20, 0.16),
+               0 8px  24px rgba(28, 24, 20, 0.09);
+
+  /* backward-compat alias */
+  --shadow-soft: var(--shadow-sm);
+}
