@@ -8,8 +8,11 @@
 import { describe, it, expect, vi } from "vitest"
 import { installChromeMock } from "../../__tests__/helpers/chromeMock"
 
-vi.mock("../safetyCheck", () => ({
-  checkUrl: vi.fn(async () => "safe" as const),
+// Service-worker.ts fires off a malware-list refresh on import — mock it out
+// so these tests never make a real network call to the public threat feed.
+vi.mock("../malwareBlocklist", () => ({
+  refreshRemoteList: vi.fn(async () => {}),
+  getMalwareDomainSet: vi.fn(async () => new Set<string>()),
 }))
 
 async function loadServiceWorker() {

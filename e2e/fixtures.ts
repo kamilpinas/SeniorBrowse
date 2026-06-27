@@ -7,15 +7,14 @@ import { fileURLToPath } from "node:url"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pathToExtension = path.join(__dirname, "..", "dist")
 
-// The check-url Supabase edge function this extension calls is baked into
-// the build as a real production URL — Vite inlines VITE_SUPABASE_URL at
-// build time, so there's no
-// equivalent here of vitest's `vi.stubGlobal("fetch", ...)`. Block all of
-// them by default at the network layer so a test that forgets to mock a
-// specific call fails loudly instead of quietly hitting production. Tests
-// that need a real response add their own context.route() for the same
-// pattern — the most-recently-registered matching handler runs first.
-const SUPABASE_FUNCTIONS_PATTERN = "**/functions/v1/**"
+// service-worker.ts fires a malware-list refresh against this real public
+// feed on every wake (src/background/malwareBlocklist.ts) — block it by
+// default so every E2E test doesn't depend on a live third party / real
+// network. It fails open (leaves storage.local.malwareList untouched), so
+// blocking it here is harmless for tests that don't care about the malware
+// list. Tests that do (malwareBlocklist.spec.ts) add their own route for
+// this same pattern — the most-recently-registered matching handler wins.
+const MALWARE_FEED_PATTERN = "https://urlhaus.abuse.ch/downloads/hostfile/**"
 
 export const test = base.extend<{
   context: BrowserContext
@@ -36,8 +35,8 @@ export const test = base.extend<{
         `--load-extension=${pathToExtension}`,
       ],
     })
-    await context.route(SUPABASE_FUNCTIONS_PATTERN, (route) =>
-      route.fulfill({ status: 503, body: JSON.stringify({ error: "blocked-in-e2e-by-default" }) }),
+    await context.route(MALWARE_FEED_PATTERN, (route) =>
+      route.fulfill({ status: 503, body: "blocked-in-e2e-by-default" }),
     )
     await use(context)
     await context.close()

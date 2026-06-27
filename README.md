@@ -63,11 +63,9 @@ A friendly panel sits on the side of every webpage with big labelled buttons —
 
 SeniorBrowse protects quietly in the background — your loved one never needs to make a single security decision.
 
-- **Dangerous websites blocked** — uses Google Safe Browsing to stop malware and scam sites before they load
 - **Downloads disabled** — no accidental file downloads that could install harmful software
 - **Ad blocking** — no flashing banners, no misleading "Download" buttons, no pop-ups
 - **Your own block list** — add any website you don't want them to visit
-- **Your own safe list** — mark trusted sites to always let through
 
 ---
 
@@ -111,7 +109,7 @@ No. You handle the entire setup. They just open a new tab and start browsing.
 **Can they accidentally change the settings?**
 No. Settings are locked behind a PIN only you know. Everything they see is read-only.
 
-**What happens if they visit a dangerous website?**
+**What happens if they visit a blocked website?**
 They see a calm, friendly page telling them to go back — no scary warnings, no technical language, no alarm.
 
 **Will it slow down their computer?**

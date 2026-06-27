@@ -5,16 +5,15 @@ export type PanelPosition = "left" | "right"
 export type Theme = "light" | "dark"
 export type ThemeColor = "red" | "blue" | "green"
 export type ShortcutSize = "small" | "medium" | "large" | "xl" | "xl2"
-export type SuspiciousLinkMode = "block" | "warn" | "off"
 export type ActivityType = "visit" | "search" | "save"
 
 export interface SecurityConfig {
   blockDownloads: boolean
-  blockSuspiciousLinks: SuspiciousLinkMode
   blockAds: boolean
   /** Host names, e.g. ["onet.pl", "youtube.com"]. */
-  whitelist: string[]
   blacklist: string[]
+  /** Block sites on the bundled + periodically-refreshed malware/phishing domain list. */
+  blockKnownMalware: boolean
 }
 
 export interface UIConfig {
@@ -84,6 +83,13 @@ export interface ActivityLogEntry {
   /** ISO 8601 timestamp. */
   visitedAt: string
   type: ActivityType
+}
+
+/** Cached, periodically-refreshed malware/phishing domain list (see background/malwareBlocklist.ts). */
+export interface MalwareList {
+  domains: string[]
+  /** ISO 8601 — null until the first successful remote refresh. */
+  updatedAt: string | null
 }
 
 export interface SessionState {

@@ -34,7 +34,7 @@ The extension replaces the browser's default new tab, injects a permanent side p
 
 ### Out of scope (Phase 2+)
 - Backend / cloud sync
-- Subscription billing (Stripe + Supabase)
+- Free
 - Caregiver remote access / notifications
 - Multi-device support
 - Firefox / Edge support
@@ -211,14 +211,7 @@ All data stored in `chrome.storage.local` or `chrome.storage.session`. Nothing l
     }
     // max 1000 entries, rotate oldest
   ],
-
-  // Trial (local in MVP, replaced by Supabase in Phase 2)
-  "subscription": {
-    "status": "trial",                 // "trial" | "grace" | "expired"
-    "installedAt": "ISO timestamp",
-    "graceEndsAt": "ISO timestamp"     // installedAt + 33 days
   }
-}
 ```
 
 ### `chrome.storage.session` (resets on browser close)
@@ -253,8 +246,6 @@ Day 33 → status = "expired"
           Extension shuts down completely
           Senior sees neutral screen: "Something went wrong. Tell Marek to check the computer."
           Senior NEVER sees the words "subscription", "payment", or "trial"
-
-Payment → Phase 2 (Stripe + Supabase)
 ```
 
 ---
@@ -410,7 +401,7 @@ These are product requirements that affect implementation decisions:
 |---|---|---|
 | External pages breaking fixed column layout | High | Auto-detect `overflow:hidden` → fallback to floating overlay |
 | Chrome Web Store rejection due to `<all_urls>` | Medium | Document each permission in store listing clearly |
-| Stripe/Supabase CSP issues (Phase 2) | Medium | Pre-add domains to `content_security_policy` in manifest |
+| Pre-add domains to `content_security_policy` in manifest |
 | `chrome.storage.local` 10MB limit | Low | Activity log rotation — max 1000 entries, drop oldest |
 | Google Safe Browsing API rate limit (10k/day) | Low | Cache recent checks in session storage |
 
@@ -420,9 +411,6 @@ These are product requirements that affect implementation decisions:
 
 When Phase 2 begins, these are the only integration points:
 
-- Replace `trialManager.js` local logic with Supabase token validation
-- Add `auth.js` in `/shared` for Supabase Auth (email-based caregiver account)
-- Add Stripe billing via Supabase Edge Functions
 - `chrome.storage.sync` for cross-device config (optional)
 - Push notifications for caregiver (activity alerts, new saved links)
 

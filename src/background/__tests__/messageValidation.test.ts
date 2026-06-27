@@ -1,14 +1,21 @@
 // Verifies that the service worker's message handlers only accept
-// state-mutating messages (admin mode, activity log, safe-browsing bypass)
-// from the extension's own pages — never from a content script running in
-// a web page, even though both report the same chrome.runtime.id.
+// state-mutating messages (admin mode, activity log) from the extension's
+// own pages — never from a content script running in a web page, even
+// though both report the same chrome.runtime.id.
 //
 // The module registers two chrome.runtime.onMessage listeners at import
 // time; we re-import it fresh (with vi.resetModules) for every test against
 // a brand-new chrome mock, then invoke the captured listener directly.
 
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { installChromeMock } from "../../__tests__/helpers/chromeMock"
+
+// Service-worker.ts fires off a malware-list refresh on import — mock it out
+// so these tests never make a real network call to the public threat feed.
+vi.mock("../malwareBlocklist", () => ({
+  refreshRemoteList: vi.fn(async () => {}),
+  getMalwareDomainSet: vi.fn(async () => new Set<string>()),
+}))
 
 type Sender = {
   id?: string
@@ -17,7 +24,6 @@ type Sender = {
 }
 
 async function loadServiceWorker() {
-  const { vi } = await import("vitest")
   vi.resetModules()
   const mock = installChromeMock()
   await import("../service-worker")
@@ -65,7 +71,6 @@ describe("message validation — gated message types", () => {
       type: "LOG_ACTIVITY",
       msg: { type: "LOG_ACTIVITY", payload: { url: "https://x.com", title: "x", type: "visit" } },
     },
-    { type: "BYPASS_URL", msg: { type: "BYPASS_URL", payload: { url: "https://x.com" } } },
   ]
 
   for (const { type, msg } of cases) {
@@ -117,28 +122,6 @@ describe("message validation — side effects only apply for legitimate senders"
       webPageSender,
     )
     await expect(storage.local.get("activityLog")).resolves.toEqual([])
-  })
-
-  it("does not add to bypassedUrls when BYPASS_URL is rejected", async () => {
-    const { mainListener, storage } = await loadServiceWorker()
-    await send(
-      mainListener,
-      { type: "BYPASS_URL", payload: { url: "https://malicious.example" } },
-      webPageSender,
-    )
-    await expect(storage.session.get("bypassedUrls")).resolves.toEqual([])
-  })
-
-  it("adds to bypassedUrls when BYPASS_URL comes from warn.html (extension page)", async () => {
-    const { mainListener, storage } = await loadServiceWorker()
-    await send(
-      mainListener,
-      { type: "BYPASS_URL", payload: { url: "https://bypassed.example" } },
-      extensionSender,
-    )
-    await expect(storage.session.get("bypassedUrls")).resolves.toEqual([
-      "https://bypassed.example",
-    ])
   })
 })
 

@@ -66,8 +66,8 @@ describe("storage.local.update", () => {
     await storage.local.update("config", { security: { blockDownloads: false } })
     const config = await storage.local.get("config")
     expect(config.security.blockDownloads).toBe(false)
-    // blockSuspiciousLinks must survive even though it wasn't part of this update.
-    expect(config.security.blockSuspiciousLinks).toBe("warn")
+    // blockAds must survive even though it wasn't part of this update.
+    expect(config.security.blockAds).toBe(true)
   })
 
   it("returns the merged value", async () => {
@@ -111,10 +111,6 @@ describe("storage.local.remove / clear", () => {
 describe("storage.session", () => {
   it("defaults adminModeActive to false", async () => {
     expect(await storage.session.get("adminModeActive")).toBe(false)
-  })
-
-  it("defaults bypassedUrls to an empty array", async () => {
-    expect(await storage.session.get("bypassedUrls")).toEqual([])
   })
 
   it("is isolated from storage.local (separate areas)", async () => {

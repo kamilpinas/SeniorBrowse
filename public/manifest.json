@@ -17,7 +17,8 @@
     "declarativeNetRequest",
     "scripting",
     "webNavigation",
-    "sidePanel"
+    "sidePanel",
+    "alarms"
   ],
   "host_permissions": ["<all_urls>"],
   "chrome_url_overrides": {
@@ -67,7 +68,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "warn.html", "newtab/index.html"],
+      "resources": ["blocked.html", "newtab/index.html"],
       "matches": ["<all_urls>"]
     }
   ]

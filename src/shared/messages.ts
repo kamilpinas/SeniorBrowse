@@ -9,8 +9,10 @@ export type IncomingMessage =
   | { type: 'TOGGLE_ADMIN_MODE' }
   | { type: 'SET_ADMIN_MODE'; payload: { active: boolean } }
   | { type: 'LOG_ACTIVITY'; payload: { url: string; title: string; type: ActivityType } }
-  | { type: 'BYPASS_URL'; payload: { url: string } }
   | { type: 'OPEN_SIDE_PANEL' }
+  // Caregiver-triggered "Update now" in Settings — refreshRemoteList() only
+  // runs in the background context, so the Settings page asks for it here.
+  | { type: 'REFRESH_MALWARE_LIST' }
 
 // ── Side-panel → content-script commands (sent via chrome.tabs.sendMessage) ──
 

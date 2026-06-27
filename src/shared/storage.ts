@@ -5,6 +5,7 @@ import type {
   ActivityLogEntry,
   Config,
   FontSize,
+  MalwareList,
   SavedLink,
   Shortcut,
 } from './types'
@@ -23,14 +24,13 @@ export interface LocalStore {
   savedLinks: SavedLink[]
   activityLog: ActivityLogEntry[]
   pinLockout: PinLockoutState
+  malwareList: MalwareList
 }
 
 export interface SessionStore {
   currentFontSize: FontSize | null
   previousFontSize: FontSize | null
   adminModeActive: boolean
-  /** URLs the user explicitly chose to bypass (safe-browsing warn page). */
-  bypassedUrls: string[]
 }
 
 export type DeepPartial<T> = T extends ReadonlyArray<unknown>
@@ -54,12 +54,12 @@ const DEFAULTS: { local: LocalStore; session: SessionStore } = {
     savedLinks: [],
     activityLog: [],
     pinLockout: { failCount: 0, lockedUntil: null },
+    malwareList: { domains: [], updatedAt: null },
   },
   session: {
     currentFontSize: null,
     previousFontSize: null,
     adminModeActive: false,
-    bypassedUrls: [],
   },
 }
 

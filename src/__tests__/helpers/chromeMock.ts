@@ -48,7 +48,7 @@ export function createChromeMock() {
         }),
         removeListener: vi.fn(),
       },
-      sendMessage: vi.fn(async () => undefined),
+      sendMessage: vi.fn(async (): Promise<unknown> => undefined),
     },
     storage: {
       local,
@@ -78,6 +78,10 @@ export function createChromeMock() {
     },
     webNavigation: {
       onBeforeNavigate: { addListener: vi.fn() },
+    },
+    alarms: {
+      create: vi.fn(),
+      onAlarm: { addListener: vi.fn() },
     },
     declarativeNetRequest: {
       updateEnabledRulesets: vi.fn(async () => undefined),

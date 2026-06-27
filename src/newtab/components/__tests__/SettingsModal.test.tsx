@@ -99,6 +99,8 @@ describe("SettingsModal — SecurityTab", () => {
     await storage.local.clear()
     onClose = vi.fn<() => void>()
     onStartSeniorTour = vi.fn<() => void>()
+    // The "Update now" control sends REFRESH_MALWARE_LIST to the background.
+    installChromeMock()
   })
 
   it("toggles Block downloads and persists the change", async () => {
@@ -114,37 +116,48 @@ describe("SettingsModal — SecurityTab", () => {
     expect(config.security.blockDownloads).toBe(false)
   })
 
-  it("switches the suspicious-link protection mode and persists it", async () => {
+  it("toggles Block known malicious sites and persists the change", async () => {
     render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
     await switchTab("Safety")
 
-    const warnRadio = await screen.findByRole("radio", { name: /Warn before visiting/ })
-    expect(warnRadio).toHaveAttribute("aria-checked", "true") // default mode is "warn"
+    const toggle = await screen.findByRole("switch", { name: "Block known malicious sites" })
+    expect(toggle).toHaveAttribute("aria-checked", "true") // DEFAULT_CONFIG.security.blockKnownMalware
+    fireEvent.click(toggle)
+    await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "false"))
 
-    const blockRadio = screen.getByRole("radio", { name: /Block dangerous sites/ })
-    fireEvent.click(blockRadio)
-
-    await waitFor(() => expect(blockRadio).toHaveAttribute("aria-checked", "true"))
     const config = await storage.local.get("config")
-    expect(config.security.blockSuspiciousLinks).toBe("block")
+    expect(config.security.blockKnownMalware).toBe(false)
   })
 
-  it("normalises full URLs to bare hostnames when saving the allow/block lists", async () => {
+  it("refreshes the threat list on demand and shows the new updated-at time", async () => {
+    const updatedAt = "2026-06-27T12:00:00.000Z"
+    const mock = installChromeMock()
+    mock.runtime.sendMessage = vi.fn(async () => ({
+      ok: true,
+      data: { domains: [], updatedAt },
+    }))
+
     render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
     await switchTab("Safety")
 
-    const allowList = await screen.findByLabelText(/Always allow these sites/)
-    fireEvent.change(allowList, {
-      target: { value: "https://google.com/search?q=foo\nyoutube.com" },
-    })
-    const blockList = screen.getByLabelText(/Always block these sites/)
+    await screen.findByText(/not yet updated/)
+    fireEvent.click(screen.getByRole("button", { name: "Update now" }))
+
+    await screen.findByText(/Threat list refreshed/)
+    await screen.findByText(/Threat list updated/)
+  })
+
+  it("normalises full URLs to bare hostnames when saving the block list", async () => {
+    render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
+    await switchTab("Safety")
+
+    const blockList = await screen.findByLabelText(/Always block these sites/)
     fireEvent.change(blockList, { target: { value: "https://example-scam.com/phish" } })
 
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }))
 
     await waitFor(async () => {
       const config = await storage.local.get("config")
-      expect(config.security.whitelist).toEqual(["google.com", "youtube.com"])
       expect(config.security.blacklist).toEqual(["example-scam.com"])
     })
   })

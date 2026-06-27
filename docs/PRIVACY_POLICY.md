@@ -21,10 +21,10 @@ When enabled by the caregiver, SeniorBrowse records the pages visited, searches 
 ### Caregiver PIN — never leaves the device
 The caregiver sets a 4-digit PIN to lock the settings panel. The PIN itself is **never stored or transmitted**. Instead, the extension stores a one-way PBKDF2-SHA256 hash and a random salt, both useless for recovering the original PIN. We cannot see, recover, or reset a forgotten PIN — uninstalling and reinstalling the extension is the only reset path, which also clears all locally stored data.
 
-### URLs checked against Safe Browsing — sent to our server, then to Google
-If the caregiver enables the "block dangerous websites" feature, each site the senior navigates to is sent to our backend, which forwards it to Google's Safe Browsing API to check whether it's known malware, phishing, or unwanted software. Results are cached so the same URL isn't checked twice. Google's use of this data is governed by [Google's Privacy Policy](https://policies.google.com/privacy). Our API key is never exposed inside the extension — all requests are proxied server-side.
+### Malicious-site blocking — fully local, no browsing data ever sent
+SeniorBrowse blocks known malware/phishing domains using a list bundled inside the extension, topped up by an automatic periodic download of a free public threat list from [abuse.ch (URLhaus)](https://urlhaus.abuse.ch/). That download is one-way: the extension fetches a public list of bad domains — it never sends the sites the senior visits, search terms, or any other personal data to abuse.ch or anywhere else. The check itself happens entirely on-device.
 
-This feature can be turned off entirely in settings, in which case no URLs are sent anywhere for this purpose.
+This feature, along with the caregiver's own block list, can be turned off entirely in settings.
 
 ### Configuration data — stays on the device
 Shortcuts, button labels, theme, text size, and other settings the caregiver configures are stored locally in the browser and are never transmitted to us.
@@ -33,10 +33,7 @@ Shortcuts, button labels, theme, text size, and other settings the caregiver con
 
 ## 2. Third parties we use
 
-| Service | Purpose | What it receives |
-|---|---|---|
-| **Supabase** | Hosts our serverless Safe Browsing proxy function | URLs being safety-checked (transiently, not stored) |
-| **Google Safe Browsing API** | Detects malicious/phishing websites | The URL being checked (via our server, never directly from your browser) |
+We don't run a backend and don't send your data anywhere. The one outbound network request SeniorBrowse makes on its own is a periodic, one-way download of a public list of known-malicious domains from abuse.ch (URLhaus) — that request carries no personal data, browsing history, or anything else about you or the senior using the device.
 
 We do not use advertising networks, analytics/tracking SDKs, or sell any data to third parties.
 

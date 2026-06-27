@@ -25,17 +25,18 @@ import {
   XIcon,
 } from "@phosphor-icons/react"
 import { storage, type DeepPartial } from "@shared/storage"
-import { SUSPICIOUS_LINK_MODES, MAX_LOG_AGE_DAYS } from "@shared/constants"
+import { MAX_LOG_AGE_DAYS } from "@shared/constants"
 import { hashPin } from "@shared/pin"
 import { FloatingToast, useToast } from "@shared/toast"
 import type { ToastType } from "@shared/toast"
+import type { MessageResponse } from "@shared/messages"
 import type {
   ActivityLogEntry,
   Config,
+  MalwareList,
   SavedLink,
   Shortcut,
   ShortcutSize,
-  SuspiciousLinkMode,
   Theme,
   ThemeColor,
 } from "@shared/types"
@@ -1309,37 +1310,22 @@ function ExportDataWidget({
 
 // ── M-03 Security tab ─────────────────────────────────────────────────────────
 
-const LINK_MODE_LABELS: Record<
-  SuspiciousLinkMode,
-  { title: string; desc: string }
-> = {
-  block: {
-    title: "Block dangerous sites",
-    desc: "Automatically block known threats",
-  },
-  warn: {
-    title: "Warn before visiting",
-    desc: "Show a warning with option to continue",
-  },
-  off: { title: "Off", desc: "No link checking" },
-}
-
 function SecurityTab({
   showToast,
 }: {
   showToast: (msg: string, type?: ToastType) => void
 }) {
   const [cfg, setCfg] = useState<Config["security"] | null>(null)
-  const [wl, setWl] = useState("") // whitelist textarea
   const [bl, setBl] = useState("") // blacklist textarea
+  const [malwareUpdatedAt, setMalwareUpdatedAt] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
-    storage.local
-      .get("config")
-      .then((c) => {
+    Promise.all([storage.local.get("config"), storage.local.get("malwareList")])
+      .then(([c, malwareList]) => {
         setCfg(c.security)
-        setWl(c.security.whitelist.join("\n"))
         setBl(c.security.blacklist.join("\n"))
+        setMalwareUpdatedAt(malwareList.updatedAt)
       })
       .catch(() => {})
   }, [])
@@ -1347,7 +1333,7 @@ function SecurityTab({
   if (!cfg) return <Spinner />
 
   const patchToggle = async (
-    key: keyof Pick<Config["security"], "blockDownloads" | "blockAds">,
+    key: keyof Pick<Config["security"], "blockDownloads" | "blockAds" | "blockKnownMalware">,
     val: boolean,
   ) => {
     const next = { ...cfg, [key]: val }
@@ -1355,12 +1341,23 @@ function SecurityTab({
     await storage.local.update("config", { security: { [key]: val } })
   }
 
-  const patchMode = async (mode: SuspiciousLinkMode) => {
-    const next = { ...cfg, blockSuspiciousLinks: mode }
-    setCfg(next)
-    await storage.local.update("config", {
-      security: { blockSuspiciousLinks: mode },
-    })
+  const refreshMalwareList = async () => {
+    setRefreshing(true)
+    try {
+      const res = (await chrome.runtime.sendMessage({
+        type: "REFRESH_MALWARE_LIST",
+      })) as MessageResponse<MalwareList>
+      if (res.ok) {
+        setMalwareUpdatedAt(res.data.updatedAt)
+        showToast("Threat list refreshed")
+      } else {
+        showToast("Couldn't reach the threat list — try again later", "error")
+      }
+    } catch {
+      showToast("Couldn't reach the threat list — try again later", "error")
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   // Normalise a free-text line into a bare hostname.
@@ -1383,13 +1380,11 @@ function SecurityTab({
     text.split("\n").map(normaliseEntry).filter(Boolean)
 
   const saveListFields = async () => {
-    const whitelist = parseList(wl)
     const blacklist = parseList(bl)
-    // Normalise the textarea values so the user sees cleaned-up entries.
-    setWl(whitelist.join("\n"))
+    // Normalise the textarea value so the user sees cleaned-up entries.
     setBl(blacklist.join("\n"))
-    await storage.local.update("config", { security: { whitelist, blacklist } })
-    showToast("Site lists saved")
+    await storage.local.update("config", { security: { blacklist } })
+    showToast("Site list saved")
   }
 
   // Detect if user typed a full URL so we can show a normalisation hint.
@@ -1420,87 +1415,48 @@ function SecurityTab({
         />
       </SettingRow>
 
+      <SettingRow
+        label="Block known malicious sites"
+        hint="Stop known malware and phishing domains before they load — works fully offline, no account needed"
+      >
+        <Toggle
+          checked={cfg.blockKnownMalware}
+          onChange={(v) => patchToggle("blockKnownMalware", v)}
+          label="Block known malicious sites"
+        />
+      </SettingRow>
+
       <div
         style={{
-          padding: "0.75rem 0",
-          borderBottom: "1px solid var(--color-surface-edge)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+          padding: "0.6rem 0",
+          fontSize: "0.8rem",
+          color: "var(--color-text-muted)",
         }}
       >
-        <div
-          id="suspicious-protection-label"
+        <span>
+          Threat list {malwareUpdatedAt ? `updated ${relativeTime(malwareUpdatedAt)}` : "not yet updated"}
+        </span>
+        <button
+          type="button"
+          onClick={() => void refreshMalwareList()}
+          disabled={refreshing}
           style={{
+            background: "none",
+            border: "none",
+            color: "var(--color-accent)",
             fontWeight: 600,
-            fontSize: "0.95rem",
-            marginBottom: "0.6rem",
-            color: "var(--color-text)",
+            fontSize: "0.8rem",
+            cursor: refreshing ? "default" : "pointer",
+            opacity: refreshing ? 0.6 : 1,
+            padding: 0,
           }}
         >
-          Suspicious site protection
-        </div>
-        <div
-          role="radiogroup"
-          aria-labelledby="suspicious-protection-label"
-          style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}
-        >
-          {SUSPICIOUS_LINK_MODES.map((mode) => {
-            const info = LINK_MODE_LABELS[mode]
-            const active = cfg.blockSuspiciousLinks === mode
-            return (
-              <button
-                key={mode}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => patchMode(mode)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  padding: "0.6rem 0.8rem",
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  border: `1.5px solid ${active ? "var(--color-accent)" : "var(--color-surface-edge)"}`,
-                  background: active
-                    ? "var(--color-accent-xlight)"
-                    : "var(--color-surface)",
-                  textAlign: "left" as const,
-                  transition: "background 0.15s, border-color 0.15s",
-                }}
-              >
-                <span
-                  style={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: "50%",
-                    flexShrink: 0,
-                    border: `2px solid ${active ? "var(--color-accent)" : "var(--color-surface-edge)"}`,
-                    background: active ? "var(--color-accent)" : "transparent",
-                  }}
-                />
-                <span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: "0.9rem",
-                      color: "var(--color-text)",
-                      display: "block",
-                    }}
-                  >
-                    {info.title}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    {info.desc}
-                  </span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
+          {refreshing ? "Updating…" : "Update now"}
+        </button>
       </div>
 
       <div
@@ -1511,20 +1467,6 @@ function SecurityTab({
           paddingTop: "0.75rem",
         }}
       >
-        <Field label="Always allow these sites (one per line)">
-          <textarea
-            value={wl}
-            style={textArea}
-            placeholder="google.com&#10;youtube.com"
-            onChange={(e) => setWl((e.target as HTMLTextAreaElement).value)}
-          />
-          {hasFullUrl(wl) && (
-            <p style={{ margin: "0.25rem 0 0", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
-              ℹ️ Full URLs will be trimmed to hostname on save (e.g. https://google.com → google.com)
-            </p>
-          )}
-        </Field>
-
         <Field label="Always block these sites (one per line)">
           <textarea
             value={bl}

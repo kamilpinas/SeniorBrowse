@@ -135,7 +135,6 @@ public/
 ### Debugging Tips
 - **Console Logs:** F12 → Console tab shows service worker and extension logs
 - **Storage:** F12 → Application → Storage → see config, activity log, etc.
-- **Network:** F12 → Network tab to see API calls to Supabase
 - **Reload:** Click the reload button on chrome://extensions to refresh
 
 ---

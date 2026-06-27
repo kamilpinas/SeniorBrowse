@@ -10,7 +10,7 @@ If you have questions, contact **kamilpinas@gmail.com**.
 
 ## 1. What SeniorBrowse is
 
-SeniorBrowse is a browser extension that lets a caregiver configure a simplified, safety-focused browsing experience for another person (typically an older adult). The caregiver controls settings through a PIN-protected panel; the end user sees a simplified interface with optional safety features such as malicious-site blocking, ad blocking, and download blocking.
+SeniorBrowse is a browser extension that lets a caregiver configure a simplified, safety-focused browsing experience for another person (typically an older adult). The caregiver controls settings through a PIN-protected panel; the end user sees a simplified interface with optional safety features such as a caregiver-managed site blocklist, ad blocking, and download blocking.
 
 SeniorBrowse is a convenience and safety tool, not a guarantee. It reduces exposure to certain risks (scam sites, malware, accidental downloads) but cannot catch every threat. Use ordinary judgment and supervision alongside it.
 
@@ -40,7 +40,7 @@ Our handling of personal data is described in the [Privacy Policy](./PRIVACY_POL
 
 SeniorBrowse is provided **"as is"**, without warranties of any kind, express or implied. We do not guarantee that:
 
-- every malicious, scam, or inappropriate website will be detected or blocked;
+- every scam, malware, or inappropriate website will be on the blocklist or otherwise prevented;
 - the Service will be uninterrupted, error-free, or compatible with every website or Chrome configuration;
 - the Service will prevent all forms of unwanted content, downloads, or online harm.
 

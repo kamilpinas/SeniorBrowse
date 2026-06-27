@@ -7,7 +7,6 @@ import type {
   PanelButtonConfig,
   PanelPosition,
   ShortcutSize,
-  SuspiciousLinkMode,
   ActivityType,
   ThemeColor,
 } from "./types"
@@ -45,11 +44,6 @@ export const SHORTCUT_SIZES: readonly ShortcutSize[] = [
   "large",
   "xl",
   "xl2",
-]
-export const SUSPICIOUS_LINK_MODES: readonly SuspiciousLinkMode[] = [
-  "block",
-  "warn",
-  "off",
 ]
 export const ACTIVITY_TYPES: readonly ActivityType[] = [
   "visit",
@@ -101,10 +95,9 @@ export const DEFAULT_CONFIG: Config = {
   defaultFontSize: "normal",
   security: {
     blockDownloads: true,
-    blockSuspiciousLinks: "warn",
     blockAds: true,
-    whitelist: [],
     blacklist: [],
+    blockKnownMalware: true,
   },
   ui: {
     showHistory: false,

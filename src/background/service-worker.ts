@@ -1,14 +1,18 @@
 // B-01: Service worker bootstrap + message routing.
-// Wires together: admin toggle, safe-browsing, download blocker,
-// activity logger, and ad blocking.
+// Wires together: admin toggle, blacklist + malware navigation guard,
+// download blocker, activity logger, and ad blocking.
 
 import { storage } from "@shared/storage"
 import type { Config } from "@shared/types"
 import type { IncomingMessage, MessageResponse } from "@shared/messages"
-import { checkUrl } from "./safetyCheck"
+import { hostMatches } from "@shared/hostMatch"
 import { handleDownload } from "./downloadBlocker"
 import { logActivity } from "./activityLogger"
 import { updateAdBlocking } from "./adBlocker"
+import { getMalwareDomainSet, refreshRemoteList } from "./malwareBlocklist"
+
+const MALWARE_REFRESH_ALARM = "refresh-malware-list"
+const MALWARE_REFRESH_PERIOD_MINUTES = 24 * 60 // once a day
 
 // ── Install / update ───────────────────────────────────────────────────────
 
@@ -32,6 +36,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Non-standard Chromium build — side panel unavailable; continue normally.
   }
 
+  // Make sure the daily malware-list refresh alarm exists (idempotent —
+  // chrome.alarms.create with the same name just resets the schedule).
+  chrome.alarms.create(MALWARE_REFRESH_ALARM, { periodInMinutes: MALWARE_REFRESH_PERIOD_MINUTES })
+
   console.info("[SeniorBrowse] service worker ready")
 })
 
@@ -40,6 +48,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.sidePanel
   ?.setPanelBehavior({ openPanelOnActionClick: true })
   .catch(console.error)
+
+// Refresh the malware list once per wake (fire-and-forget, fails open) and
+// re-fire on the daily alarm — chrome.alarms is the only reliable way to
+// get periodic work done since MV3 service workers don't stay alive.
+refreshRemoteList().catch(console.error)
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === MALWARE_REFRESH_ALARM) refreshRemoteList().catch(console.error)
+})
 
 // ── Real-time panel state via onClosed / onOpened (Chrome 141+/142+) ─────────
 // These are the authoritative events — they fire for every open/close including
@@ -170,19 +186,13 @@ async function handleMessage(
         return { ok: true, data: undefined }
       }
 
-      case "BYPASS_URL": {
-        // Only warn.html (an extension page) ever sends this — it's what
-        // lets the senior's "continue anyway" choice skip Safe Browsing for
-        // the rest of the session, so it must not be forgeable by web content.
+      case "REFRESH_MALWARE_LIST": {
         if (!isExtensionPageSender(sender)) {
           return { ok: false, error: "Forbidden" }
         }
-        const { url } = msg.payload
-        const bypassed = await storage.session.get("bypassedUrls")
-        if (!bypassed.includes(url)) {
-          await storage.session.set("bypassedUrls", [...bypassed, url])
-        }
-        return { ok: true, data: undefined }
+        await refreshRemoteList()
+        const malwareList = await storage.local.get("malwareList")
+        return { ok: true, data: malwareList }
       }
 
       case "OPEN_SIDE_PANEL":
@@ -207,7 +217,7 @@ async function handleMessage(
   }
 }
 
-// ── Navigation filter — B-02 (Safe Browsing) + B-06 (whitelist/blacklist) ─
+// ── Navigation filter — B-06 (blacklist) + malware domain list ───────────
 
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   // Main frame only; ignore iframes, pre-renders, etc.
@@ -216,13 +226,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   const { url, tabId } = details
   if (!url.startsWith("http://") && !url.startsWith("https://")) return
 
-  const [config, bypassedUrls] = await Promise.all([
-    storage.local.get("config"),
-    storage.session.get("bypassedUrls"),
-  ])
-
-  // User explicitly bypassed this URL in the current session.
-  if (bypassedUrls.includes(url)) return
+  const config = await storage.local.get("config")
 
   let hostname: string
   try {
@@ -232,42 +236,17 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   }
 
   // B-06: Hard blacklist check.
-  const isBlacklisted = config.security.blacklist.some(
-    (h) => hostname === h || hostname.endsWith(`.${h}`),
-  )
-  if (isBlacklisted) {
-    await redirectTab(
-      tabId,
-      `blocked.html?url=${encodeURIComponent(url)}&reason=blacklist`,
-    )
+  if (hostMatches(hostname, config.security.blacklist)) {
+    await redirectTab(tabId, `blocked.html?url=${encodeURIComponent(url)}`)
     return
   }
 
-  // B-06: Whitelist bypasses safe-browsing entirely.
-  const isWhitelisted = config.security.whitelist.some(
-    (h) => hostname === h || hostname.endsWith(`.${h}`),
-  )
-  if (isWhitelisted) return
-
-  // B-02: Safe Browsing check.
-  if (config.security.blockSuspiciousLinks === "off") return
-
-  const threat = await checkUrl(url)
-  if (threat === "safe") return
-
-  if (config.security.blockSuspiciousLinks === "warn") {
-    // Warn mode: always offer a bypass regardless of threat severity.
-    await redirectTab(
-      tabId,
-      `warn.html?url=${encodeURIComponent(url)}&reason=safebrowsing`,
-    )
-  } else {
-    // Block mode: hard-block malware; soft-warn for social-engineering.
-    const page = threat === "warn" ? "warn.html" : "blocked.html"
-    await redirectTab(
-      tabId,
-      `${page}?url=${encodeURIComponent(url)}&reason=safebrowsing`,
-    )
+  // Bundled + periodically-refreshed malware/phishing domain list.
+  if (config.security.blockKnownMalware) {
+    const malwareDomains = await getMalwareDomainSet()
+    if (hostMatches(hostname, malwareDomains)) {
+      await redirectTab(tabId, `blocked.html?url=${encodeURIComponent(url)}`)
+    }
   }
 })
 

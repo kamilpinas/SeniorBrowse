@@ -19,7 +19,7 @@ import {
 import { storage } from "@shared/storage"
 import { SHORTCUT_SIZES } from "@shared/constants"
 import { hashPin } from "@shared/pin"
-import type { ShortcutSize, SuspiciousLinkMode, ThemeColor } from "@shared/types"
+import type { ShortcutSize, ThemeColor } from "@shared/types"
 import { ThemeColorPicker } from "./ThemeColorPicker"
 import { applyTheme } from "../hooks/useTheme"
 import { Mark } from "@shared/Mark"
@@ -751,14 +751,14 @@ function StepTheme({
 interface SecurityDraft {
   blockDownloads: boolean
   blockAds: boolean
-  blockSuspiciousLinks: SuspiciousLinkMode
+  blockKnownMalware: boolean
 }
 
 function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
   const [settings, setSettings] = useState<SecurityDraft>({
     blockDownloads: true,
     blockAds: true,
-    blockSuspiciousLinks: "warn",
+    blockKnownMalware: true,
   })
 
   const patch = (key: keyof SecurityDraft, val: SecurityDraft[typeof key]) =>
@@ -800,6 +800,11 @@ function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
             label: "Block adverts",
             hint: "Hide ads on all websites",
           },
+          {
+            key: "blockKnownMalware" as const,
+            label: "Block known malicious sites",
+            hint: "Stop known malware and phishing domains automatically",
+          },
         ].map(({ key, label, hint }) => (
           <div
             key={key}
@@ -839,54 +844,6 @@ function StepSecurity({ onNext }: { onNext: (s: SecurityDraft) => void }) {
             />
           </div>
         ))}
-
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            background: "var(--color-surface)",
-            border: "1.5px solid var(--color-surface-edge)",
-            borderRadius: 12,
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: "1rem",
-              color: "var(--color-text)",
-              marginBottom: "0.5rem",
-            }}
-          >
-            Dangerous website warnings
-          </div>
-          {(["warn", "block", "off"] as SuspiciousLinkMode[]).map((mode) => (
-            <label
-              key={mode}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.6rem",
-                padding: "0.3rem 0",
-                cursor: "pointer",
-                fontSize: "0.9rem",
-              }}
-            >
-              <input
-                type="radio"
-                name="sbMode"
-                value={mode}
-                checked={settings.blockSuspiciousLinks === mode}
-                onChange={() => patch("blockSuspiciousLinks", mode)}
-              />
-              <span style={{ color: "var(--color-text)" }}>
-                {mode === "warn"
-                  ? "Show a warning (recommended)"
-                  : mode === "block"
-                    ? "Block automatically"
-                    : "Off"}
-              </span>
-            </label>
-          ))}
-        </div>
       </div>
 
       <button style={primaryBtn} onClick={() => onNext(settings)}>
@@ -1170,7 +1127,7 @@ export function OnboardingWizard({ onComplete }: Props) {
   const handleStep5 = async (sec: {
     blockDownloads: boolean
     blockAds: boolean
-    blockSuspiciousLinks: SuspiciousLinkMode
+    blockKnownMalware: boolean
   }) => {
     await storage.local.update("config", { security: sec })
     setStep(6)
