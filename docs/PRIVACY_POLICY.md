@@ -8,9 +8,21 @@ If you have questions not answered here, contact us at **kamilpinas@gmail.com**.
 
 ---
 
-## 1. Data collected and why
+## 1. What we collect
 
-### Activity log — stays on the device
+### What we do NOT collect
+SeniorBrowse does **not** collect, store, or transmit:
+- Keystroke logs or typing history
+- Screen recordings or screenshots
+- Mouse movements or clicks
+- Audio, video, or webcam data
+- Payment or financial information
+- Location data
+- Social media credentials or logins
+
+### What we do collect
+
+#### Activity log — stays on the device
 When enabled by the caregiver, SeniorBrowse records the pages visited, searches made, and pages saved by the senior user: the URL, page title, a timestamp, and the activity type (visit / search / save).
 
 - This log is stored **only** in the browser's local extension storage (`chrome.storage.local`) on the senior's own computer.
@@ -46,18 +58,33 @@ We do not use advertising networks, analytics/tracking SDKs, or sell any data to
 
 ---
 
-## 4. Children's privacy
+## 4. Security
+
+### PIN protection and hashing
+The caregiver PIN is protected using **PBKDF2-SHA256** with 100,000 iterations and a random salt. This is a cryptographic one-way hash — even if someone gained access to your device's storage, they could not recover the original PIN or unlock the settings panel.
+
+After 5 incorrect PIN attempts, the numpad locks for an escalating duration (30 seconds to 1 hour). Repeated attempts cannot brute-force the PIN.
+
+### Local storage
+All data is stored in Chrome's `chrome.storage.local`, which is isolated from other extensions and websites. Each extension has its own encrypted storage area.
+
+### No third-party servers
+Because SeniorBrowse has no backend, there is no single server where all user data could be breached. Your data exists only on the device where the extension is installed.
+
+---
+
+## 5. Children's privacy
 
 SeniorBrowse is designed for use by adults (caregivers setting up the extension for another adult). It is not directed at children, and we do not knowingly collect data from children.
 
 ---
 
-## 5. Changes to this policy
+## 6. Changes to this policy
 
 We may update this policy as the extension evolves. Material changes will be reflected here with an updated "Last updated" date.
 
 ---
 
-## 6. Contact
+## 7. Contact
 
 Questions about this policy or your data: **kamilpinas@gmail.com**

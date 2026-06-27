@@ -22,11 +22,23 @@ SeniorBrowse is **free to install and use, with no account, trial, or subscripti
 
 You agree not to:
 
-- attempt to bypass, disable, or circumvent the PIN-protected admin lock through means other than the lock screen itself (e.g., tampering with extension storage to fake an "unlocked" state);
-- use the Service to monitor or restrict another adult without their knowledge in a manner unlawful in your jurisdiction — SeniorBrowse is intended for use with the knowledge and consent of the person being set up, consistent with applicable family/caregiving and privacy laws;
-- reverse-engineer the extension for the purpose of building a competing product.
+- **Bypass PIN protection:** Attempt to bypass, disable, or circumvent the PIN-protected admin lock through means other than the normal lock screen (e.g., tampering with extension storage, developer tools, or other unauthorized means).
+
+- **Unlawful monitoring:** Use the Service to monitor, restrict, or control another person without their knowledge or appropriate legal authority. SeniorBrowse is designed for use with explicit knowledge and consent of the person being monitored, consistent with applicable laws in your jurisdiction regarding caregiver authority, guardianship, guardianship laws, elder care, and privacy.
+
+- **Competitive reverse-engineering:** Reverse-engineer, decompile, or analyze the extension for the purpose of building a competing product or extracting proprietary techniques.
 
 We reserve the right to suspend or revoke access for accounts found violating these terms.
+
+### Caregiving and legal responsibility
+
+SeniorBrowse is a tool to support caregiving relationships. By using this extension, you affirm that you have the legal authority and consent to monitor and restrict the browsing activity of the person in question, consistent with your jurisdiction's laws. This may include:
+- Being a designated caregiver or family member
+- Having guardianship or power of attorney
+- Having explicit informed consent from the person being monitored
+- Complying with applicable elder care or disability laws
+
+If you are unsure whether your use is lawful, consult with a legal advisor before proceeding.
 
 ---
 
@@ -64,7 +76,7 @@ You may stop using SeniorBrowse at any time by uninstalling the extension. We ma
 
 ## 7. Governing law
 
-These terms are governed by the laws of the United States, without regard to conflict-of-law principles. If you wish to designate a specific state of incorporation/operation for added precision, update this section accordingly before publishing.
+These terms are governed by the laws of the United States, without regard to conflict-of-law principles.
 
 ---
 
