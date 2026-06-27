@@ -8,7 +8,6 @@ import type { ActivityType, FontSize } from './types'
 export type IncomingMessage =
   | { type: 'TOGGLE_ADMIN_MODE' }
   | { type: 'SET_ADMIN_MODE'; payload: { active: boolean } }
-  | { type: 'CHECK_TRIAL_STATUS' }
   | { type: 'LOG_ACTIVITY'; payload: { url: string; title: string; type: ActivityType } }
   | { type: 'BYPASS_URL'; payload: { url: string } }
   | { type: 'OPEN_SIDE_PANEL' }
@@ -27,10 +26,6 @@ export type TabCommand =
 export type OutgoingMessage =
   | { type: 'ADMIN_MODE_CHANGED'; payload: { active: boolean } }
   | { type: 'CONFIG_UPDATED' }
-  // newtab → sidepanel: ask the panel page to window.close() itself.
-  // Sent from the expired ("Just a short pause") screen so the senior can
-  // dismiss the panel without hunting for Chrome's native ✕.
-  | { type: 'CLOSE_PANEL_REQUEST' }
 
 // ── Response envelope ────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import { verifyPin } from "@shared/pin"
 import { storage } from "@shared/storage"
-import type { SavedLink, ActivityLogEntry, Subscription } from "@shared/types"
+import type { SavedLink, ActivityLogEntry } from "@shared/types"
 import { installChromeMock } from "../../../__tests__/helpers/chromeMock"
 import { SettingsModal } from "../SettingsModal"
 
@@ -265,86 +265,5 @@ describe("SettingsModal — ActivityLogTab", () => {
     await screen.findByText("Activity log cleared")
     const log = await storage.local.get("activityLog")
     expect(log).toEqual([])
-  })
-})
-
-describe("SettingsModal — TrialTab", () => {
-  let onClose: ReturnType<typeof vi.fn<() => void>>
-  let onStartSeniorTour: ReturnType<typeof vi.fn<() => void>>
-
-  beforeEach(async () => {
-    await storage.local.clear()
-    onClose = vi.fn<() => void>()
-    onStartSeniorTour = vi.fn<() => void>()
-    // TrialTab always fires a validate-license fetch on mount when a
-    // licenseKey is cached. VITE_SUPABASE_URL points at a real project in
-    // this repo's .env, so every test here MUST stub fetch — otherwise it'd
-    // make a real network call to production Supabase. Default to a
-    // same-tick failure so cached data is left untouched unless a test
-    // overrides this with its own success response.
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) })))
-  })
-
-  it("shows an empty state when no account exists", async () => {
-    render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
-    await switchTab("Billing")
-    expect(await screen.findByText(/No account found/)).toBeInTheDocument()
-  })
-
-  it("shows cached trial status, days remaining, and account stats", async () => {
-    const sub: Subscription = {
-      status: "trial",
-      licenseKey: "lic-1",
-      email: "grandma@example.com",
-      trialEndsAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-      lastValidatedAt: null,
-      daysLeft: 3,
-    }
-    await storage.local.set("subscription", sub)
-    await storage.local.set("activityLog", [
-      { url: "https://a.com", title: "A", visitedAt: new Date().toISOString(), type: "visit" },
-    ])
-
-    render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
-    await switchTab("Billing")
-
-    expect(await screen.findByText("Free trial active")).toBeInTheDocument()
-    expect(screen.getByText("3 days remaining")).toBeInTheDocument()
-    expect(screen.getByText("grandma@example.com")).toBeInTheDocument()
-    expect(screen.getByText("1")).toBeInTheDocument() // Pages visited stat
-  })
-
-  it("refreshes subscription status from the server and persists the result", async () => {
-    const sub: Subscription = {
-      status: "trial",
-      licenseKey: "lic-1",
-      email: "grandma@example.com",
-      trialEndsAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
-      lastValidatedAt: null,
-      daysLeft: 3,
-    }
-    await storage.local.set("subscription", sub)
-    await storage.local.set("activityLog", [])
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        json: async () => ({
-          status: "active",
-          daysLeft: null,
-          trialEndsAt: null,
-          currentPeriodEndsAt: null,
-        }),
-      })),
-    )
-
-    render(<SettingsModal onClose={onClose} onStartSeniorTour={onStartSeniorTour} />)
-    await switchTab("Billing")
-
-    await waitFor(() => expect(screen.getByText("Subscription active")).toBeInTheDocument())
-    const updated = await storage.local.get("subscription")
-    expect(updated?.status).toBe("active")
-    // email isn't returned by validate-license anymore — the cached value must survive.
-    expect(updated?.email).toBe("grandma@example.com")
   })
 })

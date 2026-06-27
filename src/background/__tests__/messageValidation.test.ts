@@ -142,10 +142,3 @@ describe("message validation — side effects only apply for legitimate senders"
   })
 })
 
-describe("message validation — ungated read-only message", () => {
-  it("answers CHECK_TRIAL_STATUS regardless of sender (no state mutation)", async () => {
-    const { mainListener } = await loadServiceWorker()
-    const res = await send(mainListener, { type: "CHECK_TRIAL_STATUS" }, webPageSender)
-    expect(res).toMatchObject({ ok: true })
-  })
-})

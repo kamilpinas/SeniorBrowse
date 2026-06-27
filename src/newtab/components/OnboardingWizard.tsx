@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react"
 import {
   ArrowRightIcon,
   ConfettiIcon,
-  EnvelopeIcon,
   HandWavingIcon,
   LockSimpleIcon,
   MapPinIcon,
@@ -20,17 +19,10 @@ import {
 import { storage } from "@shared/storage"
 import { SHORTCUT_SIZES } from "@shared/constants"
 import { hashPin } from "@shared/pin"
-import type {
-  ShortcutSize,
-  Subscription,
-  SuspiciousLinkMode,
-  ThemeColor,
-} from "@shared/types"
+import type { ShortcutSize, SuspiciousLinkMode, ThemeColor } from "@shared/types"
 import { ThemeColorPicker } from "./ThemeColorPicker"
 import { applyTheme } from "../hooks/useTheme"
 import { Mark } from "@shared/Mark"
-
-const REGISTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-license`
 
 interface Props {
   onComplete: () => void
@@ -296,138 +288,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
   )
 }
 
-// Step 1: Email — registers / recovers the license on the server
-function StepEmail({ onNext }: { onNext: (email: string) => void }) {
-  const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-
-  const handleSubmit = async () => {
-    setError("")
-    const trimmed = email.trim().toLowerCase()
-    if (!trimmed || !trimmed.includes("@")) {
-      setError("Please enter a valid email address.")
-      return
-    }
-    setLoading(true)
-    try {
-      const installId = await storage.local.get("installId")
-      const res = await fetch(REGISTER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed, installId }),
-      })
-      const data = (await res.json()) as {
-        licenseKey?: string
-        status?: string
-        trialEndsAt?: string
-        error?: string
-        reason?: string
-      }
-      if (!res.ok) {
-        if (res.status === 403) {
-          // Deliberate rejection — device or email reuse. No offline skip.
-          setError(
-            data.reason === "device"
-              ? "This browser has already used its free trial. Please subscribe at seniorbrowse.app to continue."
-              : "This email's free trial has already been used. Please subscribe at seniorbrowse.app to continue.",
-          )
-        } else {
-          setError(data.error ?? "Something went wrong. Please try again.")
-        }
-        return
-      }
-      const trialEndsAt = data.trialEndsAt ?? null
-      const daysLeft = trialEndsAt
-        ? Math.max(
-            0,
-            Math.ceil(
-              (new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000,
-            ),
-          )
-        : null
-      const sub: Subscription = {
-        status: (data.status ?? "trial") as Subscription["status"],
-        licenseKey: data.licenseKey!,
-        email: trimmed,
-        trialEndsAt,
-        lastValidatedAt: null,
-        daysLeft,
-      }
-      await storage.local.set("subscription", sub)
-      onNext(trimmed)
-    } catch {
-      // Network error — registration is required, so there is no offline
-      // skip: continuing without a license would mean free usage after
-      // the trial. Explain that internet is needed and let them retry.
-      setError(
-        "No internet connection. SeniorBrowse needs to be online to start " +
-          "your free trial — please check the connection and try again.",
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <>
-      <div
-        style={{ textAlign: "center" as const, color: "var(--color-accent)" }}
-      >
-        <EnvelopeIcon size={48} weight="fill" />
-      </div>
-      <div>
-        <h2 style={heading}>Start your free 7-day trial</h2>
-        <p style={{ ...body, marginTop: "0.5rem" }}>
-          Enter your email to create your account. No credit card needed now.
-        </p>
-      </div>
-      <Field label="Your email address">
-        <input
-          type="email"
-          value={email}
-          placeholder="e.g. magda@example.com"
-          style={inputStyle}
-          autoFocus
-          onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void handleSubmit()
-          }}
-        />
-      </Field>
-      {error && (
-        <p style={{ margin: 0, color: "var(--color-danger)", fontSize: "0.875rem" }}>
-          {error}
-        </p>
-      )}
-      <button
-        style={{ ...primaryBtn, opacity: loading ? 0.7 : 1 }}
-        onClick={() => void handleSubmit()}
-        disabled={loading}
-        onMouseEnter={(e) => {
-          if (!loading) {
-            e.currentTarget.style.background = "var(--color-accent-strong)"
-            e.currentTarget.style.transform = "scale(1.02)"
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "var(--color-accent)"
-          e.currentTarget.style.transform = "scale(1)"
-        }}
-      >
-        {loading ? (
-          "Checking…"
-        ) : (
-          <>
-            Continue <ArrowRightIcon size={18} />
-          </>
-        )}
-      </button>
-    </>
-  )
-}
-
-// Step 2: Names
+// Step 1: Names
 function StepNames({
   onNext,
 }: {
@@ -1254,7 +1115,7 @@ function StepHandover({
 
 // ── Wizard container ─────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 9
+const TOTAL_STEPS = 8
 
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(0)
@@ -1264,22 +1125,18 @@ export function OnboardingWizard({ onComplete }: Props) {
   const markDone = () =>
     storage.local.update("config", { onboardingDone: true }).catch(() => {})
 
-
-  // step 1 → 2: email registered
-  const handleStep1 = (_email: string) => setStep(2)
-
-  // step 2 → 3: names saved
-  const handleStep2 = async (senior: string, caregiver: string) => {
+  // step 1 → 2: names saved
+  const handleStep1 = async (senior: string, caregiver: string) => {
     setSeniorName(senior)
     await storage.local.update("config", {
       seniorName: senior,
       caregiverName: caregiver,
     })
-    setStep(3)
+    setStep(2)
   }
 
-  // step 3 → 4: shortcuts saved
-  const handleStep3 = async (shortcuts: PendingShortcut[]) => {
+  // step 2 → 3: shortcuts saved
+  const handleStep2 = async (shortcuts: PendingShortcut[]) => {
     if (shortcuts.length > 0) {
       const existing = await storage.local.get("shortcuts")
       const startPos = existing.length
@@ -1293,36 +1150,36 @@ export function OnboardingWizard({ onComplete }: Props) {
       }))
       await storage.local.set("shortcuts", [...existing, ...newShortcuts])
     }
+    setStep(3)
+  }
+
+  // step 3 → 4: shortcut size saved
+  const handleStep3 = async (size: ShortcutSize) => {
+    await storage.local.update("config", { shortcutSize: size })
     setStep(4)
   }
 
-  // step 4 → 5: shortcut size saved
-  const handleStep4 = async (size: ShortcutSize) => {
-    await storage.local.update("config", { shortcutSize: size })
+  // step 4 → 5: theme colour saved (live-applied during preview)
+  const handleStep4 = async (color: ThemeColor) => {
+    setThemeColor(color)
+    await storage.local.update("config", { themeColor: color })
     setStep(5)
   }
 
-  // step 5 → 6: theme colour saved (live-applied during preview)
-  const handleStep5 = async (color: ThemeColor) => {
-    setThemeColor(color)
-    await storage.local.update("config", { themeColor: color })
-    setStep(6)
-  }
-
-  // step 6 → 7: security saved
-  const handleStep6 = async (sec: {
+  // step 5 → 6: security saved
+  const handleStep5 = async (sec: {
     blockDownloads: boolean
     blockAds: boolean
     blockSuspiciousLinks: SuspiciousLinkMode
   }) => {
     await storage.local.update("config", { security: sec })
-    setStep(7)
+    setStep(6)
   }
 
-  // step 7 → 8: PIN set
-  const handleStep7 = async (pinHash: string, pinSalt: string) => {
+  // step 6 → 7: PIN set
+  const handleStep6 = async (pinHash: string, pinSalt: string) => {
     await storage.local.update("config", { pinHash, pinSalt })
-    setStep(8)
+    setStep(7)
   }
 
   const handleStartTour = async () => {
@@ -1352,20 +1209,19 @@ export function OnboardingWizard({ onComplete }: Props) {
 
         <div style={stepScroll}>
           {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
-          {step === 1 && <StepEmail onNext={handleStep1} />}
-          {step === 2 && <StepNames onNext={handleStep2} />}
-          {step === 3 && <StepShortcuts onNext={handleStep3} />}
-          {step === 4 && <StepShortcutSize onNext={handleStep4} />}
-          {step === 5 && <StepTheme initial={themeColor} onNext={handleStep5} />}
-          {step === 6 && <StepSecurity onNext={handleStep6} />}
-          {step === 7 && <StepPin onNext={handleStep7} />}
-          {step === 8 && (
+          {step === 1 && <StepNames onNext={handleStep1} />}
+          {step === 2 && <StepShortcuts onNext={handleStep2} />}
+          {step === 3 && <StepShortcutSize onNext={handleStep3} />}
+          {step === 4 && <StepTheme initial={themeColor} onNext={handleStep4} />}
+          {step === 5 && <StepSecurity onNext={handleStep5} />}
+          {step === 6 && <StepPin onNext={handleStep6} />}
+          {step === 7 && (
             <StepHandover seniorName={seniorName} onStartTour={handleStartTour} />
           )}
         </div>
 
         {/* Back / skip row for optional steps */}
-        {step >= 1 && step <= 8 && (
+        {step >= 1 && step <= 7 && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             {/* ← Back: go to previous step */}
             <button
@@ -1386,7 +1242,7 @@ export function OnboardingWizard({ onComplete }: Props) {
             </button>
 
             {/* Skip this step → only on non-final optional steps */}
-            {step >= 2 && step <= 6 && (
+            {step >= 1 && step <= 5 && (
               <button
                 onClick={() => setStep((s) => s + 1)}
                 style={{

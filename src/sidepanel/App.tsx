@@ -1622,12 +1622,6 @@ export function App() {
       if (m.type === "ADMIN_MODE_CHANGED" && m.payload != null) {
         setAdminMode(m.payload.active)
       }
-      // Sent by the newtab expired screen — window.close() on the panel
-      // page closes the side panel (the SW's onClosed listener then
-      // broadcasts panelOpen:false to everyone else).
-      if (m.type === "CLOSE_PANEL_REQUEST") {
-        window.close()
-      }
     }
     chrome.runtime.onMessage.addListener(handler)
     return () => chrome.runtime.onMessage.removeListener(handler)

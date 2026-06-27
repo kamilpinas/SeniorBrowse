@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pathToExtension = path.join(__dirname, "..", "dist")
 
-// Every Supabase edge function this extension calls (register-license,
-// validate-license, check-url) is baked into the build as a real production
-// URL — Vite inlines VITE_SUPABASE_URL at build time, so there's no
+// The check-url Supabase edge function this extension calls is baked into
+// the build as a real production URL — Vite inlines VITE_SUPABASE_URL at
+// build time, so there's no
 // equivalent here of vitest's `vi.stubGlobal("fetch", ...)`. Block all of
 // them by default at the network layer so a test that forgets to mock a
 // specific call fails loudly instead of quietly hitting production. Tests
@@ -60,16 +60,15 @@ export const expect = test.expect
 
 /**
  * On a fresh profile, chrome.runtime.onInstalled asynchronously seeds the
- * default `config` into storage (service-worker.ts), then writes
- * `installId`. A test that writes its own storage state immediately after
- * the fixture resolves can race that seeding and get clobbered — installId
- * only appears once the config write has already landed, so polling for it
- * is a reliable way to wait the race out before seeding test data.
+ * default `config` into storage (service-worker.ts). A test that writes its
+ * own storage state immediately after the fixture resolves can race that
+ * seeding and get clobbered, so polling for `config` to land is a reliable
+ * way to wait the race out before seeding test data.
  */
 export async function waitForExtensionReady(serviceWorker: Worker): Promise<void> {
   await test.step("wait for onInstalled config seeding to settle", async () => {
     await base.expect
-      .poll(() => serviceWorker.evaluate(() => chrome.storage.local.get("installId")))
+      .poll(() => serviceWorker.evaluate(() => chrome.storage.local.get("config")))
       .not.toEqual({})
   })
 }

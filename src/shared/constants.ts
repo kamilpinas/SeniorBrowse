@@ -18,17 +18,6 @@ export const MAX_LOG_ENTRIES = 1000
 // browsed — it's a recent-activity view for the caregiver, not an archive.
 export const MAX_LOG_AGE_DAYS = 90
 
-// Trial flow — server-enforced via Supabase edge functions.
-export const TRIAL_DAYS = 7
-export const GRACE_DAYS = 3
-
-// How often the extension re-validates the license with the server (ms).
-export const LICENSE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
-
-// If the server is unreachable, the extension keeps working for this long
-// before locking. Prevents losing access during short internet outages.
-export const LICENSE_OFFLINE_GRACE_MS = 3 * 24 * 60 * 60 * 1000 // 3 days
-
 // UX timings.
 export const UNDO_TOAST_MS = 5000
 

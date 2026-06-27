@@ -7,7 +7,6 @@ export type ThemeColor = "red" | "blue" | "green"
 export type ShortcutSize = "small" | "medium" | "large" | "xl" | "xl2"
 export type SuspiciousLinkMode = "block" | "warn" | "off"
 export type ActivityType = "visit" | "search" | "save"
-export type SubscriptionStatus = "trial" | "active" | "grace" | "expired" | "not_found"
 
 export interface SecurityConfig {
   blockDownloads: boolean
@@ -85,20 +84,6 @@ export interface ActivityLogEntry {
   /** ISO 8601 timestamp. */
   visitedAt: string
   type: ActivityType
-}
-
-export interface Subscription {
-  status: SubscriptionStatus
-  /** UUID returned by the register-license edge function. */
-  licenseKey: string
-  /** Email used to register — stored locally for checkout URL pre-fill. */
-  email: string
-  /** ISO 8601 — when the trial ends; null for active paid subscriptions. */
-  trialEndsAt: string | null
-  /** ISO 8601 — when the extension last successfully validated with the server; null before first check. */
-  lastValidatedAt: string | null
-  /** Days remaining in trial (null when not in trial). */
-  daysLeft: number | null
 }
 
 export interface SessionState {

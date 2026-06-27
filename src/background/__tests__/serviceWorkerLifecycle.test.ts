@@ -28,7 +28,7 @@ function getListener<T extends (...args: never[]) => unknown>(
 }
 
 describe("onInstalled", () => {
-  it("seeds the default config and a fresh installId on first install", async () => {
+  it("seeds the default config on first install", async () => {
     const { mock, storage } = await loadServiceWorker()
     const onInstalled = getListener<(d: { reason: string }) => Promise<void>>(
       mock.runtime.onInstalled.addListener,
@@ -36,21 +36,8 @@ describe("onInstalled", () => {
 
     await onInstalled({ reason: "install" })
 
-    await expect(storage.local.get("installId")).resolves.not.toBe("")
     const config = await storage.local.get("config")
     expect(config.security.blockDownloads).toBe(true)
-  })
-
-  it("does not overwrite an existing installId on install", async () => {
-    const { mock, storage } = await loadServiceWorker()
-    await storage.local.set("installId", "existing-id")
-    const onInstalled = getListener<(d: { reason: string }) => Promise<void>>(
-      mock.runtime.onInstalled.addListener,
-    )
-
-    await onInstalled({ reason: "install" })
-
-    await expect(storage.local.get("installId")).resolves.toBe("existing-id")
   })
 
   it("syncs ad-blocking from the seeded config's blockAds flag", async () => {
@@ -64,7 +51,7 @@ describe("onInstalled", () => {
     )
   })
 
-  it("does not re-seed config/installId on a plain update (not a fresh install)", async () => {
+  it("does not re-seed config on a plain update (not a fresh install)", async () => {
     const { mock } = await loadServiceWorker()
     const onInstalled = getListener<(d: { reason: string }) => Promise<void>>(
       mock.runtime.onInstalled.addListener,
@@ -72,10 +59,7 @@ describe("onInstalled", () => {
 
     await onInstalled({ reason: "update" })
 
-    // installId is seeded by the module-level top-of-file effect regardless
-    // (guards against cleared storage), but onInstalled itself must not be
-    // the thing forcing a re-seed on "update" — config write only happens
-    // inside the `reason === "install"` branch.
+    // Config write only happens inside the `reason === "install"` branch.
     const setCalls = mock.storage.local.set.mock.calls.map((c) => Object.keys(c[0] as object))
     expect(setCalls.some((keys) => keys.includes("config"))).toBe(false)
   })

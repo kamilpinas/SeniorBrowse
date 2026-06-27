@@ -90,16 +90,20 @@ describe("storage.local.update", () => {
 
 describe("storage.local.remove / clear", () => {
   it("remove() resets a key back to its default on next get", async () => {
-    await storage.local.set("installId", "abc-123")
-    await storage.local.remove("installId")
-    expect(await storage.local.get("installId")).toBe("")
+    await storage.local.set("shortcuts", [
+      { id: "1", label: "A", url: "https://a.com", position: 0, size: "medium" },
+    ])
+    await storage.local.remove("shortcuts")
+    expect(await storage.local.get("shortcuts")).toEqual([])
   })
 
   it("clear() resets every key back to defaults", async () => {
-    await storage.local.set("installId", "abc-123")
+    await storage.local.set("shortcuts", [
+      { id: "1", label: "A", url: "https://a.com", position: 0, size: "medium" },
+    ])
     await storage.local.update("config", { seniorName: "Dad" })
     await storage.local.clear()
-    expect(await storage.local.get("installId")).toBe("")
+    expect(await storage.local.get("shortcuts")).toEqual([])
     expect((await storage.local.get("config")).seniorName).toBe("")
   })
 })

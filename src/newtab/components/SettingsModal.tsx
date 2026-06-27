@@ -3,7 +3,6 @@
 // M-03: Security tab
 // M-04: Saved Links tab
 // M-05: Activity Log tab
-// M-06: Trial tab
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useFocusTrap } from "@shared/useFocusTrap"
@@ -12,9 +11,7 @@ import {
   BookmarkSimpleIcon,
   CheckIcon,
   ClipboardTextIcon,
-  CreditCardIcon,
   GlobeIcon,
-  HourglassIcon,
   KeyIcon,
   LockSimpleIcon,
   MagnifyingGlassIcon,
@@ -22,7 +19,6 @@ import {
   PaletteIcon,
   PlusIcon,
   ShieldCheckIcon,
-  StarIcon,
   SunIcon,
   TrashIcon,
   UserIcon,
@@ -30,7 +26,6 @@ import {
 } from "@phosphor-icons/react"
 import { storage, type DeepPartial } from "@shared/storage"
 import { SUSPICIOUS_LINK_MODES, MAX_LOG_AGE_DAYS } from "@shared/constants"
-import { getCheckoutUrls } from "@shared/checkout"
 import { hashPin } from "@shared/pin"
 import { FloatingToast, useToast } from "@shared/toast"
 import type { ToastType } from "@shared/toast"
@@ -40,7 +35,6 @@ import type {
   SavedLink,
   Shortcut,
   ShortcutSize,
-  Subscription,
   SuspiciousLinkMode,
   Theme,
   ThemeColor,
@@ -948,15 +942,12 @@ function ExportDataWidget({
         storage.local.get("activityLog"),
         storage.local.get("config"),
       ])
-      // Strip the subscription/license fields from the config — they're
-      // device-bound and shouldn't move between installs.
       const data: BackupFile = {
         exportedAt: new Date().toISOString(),
         version: BACKUP_VERSION,
         shortcuts,
         savedLinks,
         activityLog,
-        // Full config — no subscription/license here (those live separately).
         config,
       }
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -1022,7 +1013,6 @@ function ExportDataWidget({
     setImporting(true)
     try {
       const { data } = preview
-      // Restore the data. Subscription stays untouched (device-bound).
       const writes: Promise<unknown>[] = []
       if (Array.isArray(data.shortcuts)) {
         writes.push(storage.local.set("shortcuts", data.shortcuts))
@@ -2062,318 +2052,6 @@ function ActivityLogTab({
   )
 }
 
-// ── M-06 Trial tab ────────────────────────────────────────────────────────────
-
-const STATUS_STYLE: Record<
-  string,
-  { bg: string; color: string; label: string }
-> = {
-  trial: {
-    bg: "var(--color-success-light)",
-    color: "var(--color-success)",
-    label: "Free trial active",
-  },
-  active: {
-    bg: "var(--color-success-light)",
-    color: "var(--color-success)",
-    label: "Subscription active",
-  },
-  grace: {
-    bg: "var(--color-accent-xlight)",
-    color: "var(--color-accent)",
-    label: "Renewal needed soon",
-  },
-  expired: {
-    bg: "var(--color-danger-light)",
-    color: "var(--color-danger)",
-    label: "Subscription ended",
-  },
-  not_found: {
-    bg: "var(--color-surface)",
-    color: "var(--color-text-muted)",
-    label: "Not set up yet",
-  },
-}
-
-const VALIDATE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-license`
-
-function TrialTab() {
-  const [sub, setSub] = useState<Subscription | null>(null)
-  const [logCount, setLogCount] = useState(0)
-  const [refreshing, setRefreshing] = useState(false)
-
-  // Load cached data immediately, then fetch fresh info from the server.
-  useEffect(() => {
-    Promise.all([
-      storage.local.get("subscription"),
-      storage.local.get("activityLog"),
-    ])
-      .then(([s, log]) => {
-        setSub(s)
-        setLogCount(log.length)
-        // Fetch live data from Supabase if we have a license key
-        if (s?.licenseKey) fetchLive(s)
-      })
-      .catch(() => {})
-  }, [])
-
-  const fetchLive = async (cached: Subscription) => {
-    setRefreshing(true)
-    try {
-      const res = await fetch(VALIDATE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ licenseKey: cached.licenseKey }),
-      })
-      if (!res.ok) return
-      // `email` is no longer returned by validate-license (audit #2); the
-      // locally-cached email is kept instead. Typed optional to match.
-      const data = await res.json() as {
-        status: string
-        daysLeft: number | null
-        trialEndsAt: string | null
-        currentPeriodEndsAt: string | null
-        email?: string
-      }
-      const updated: Subscription = {
-        ...cached,
-        status: data.status as Subscription["status"],
-        daysLeft: data.daysLeft,
-        trialEndsAt: data.trialEndsAt,
-        lastValidatedAt: new Date().toISOString(),
-        ...(data.email && { email: data.email }),
-      }
-      await storage.local.set("subscription", updated)
-      setSub(updated)
-    } catch {
-      // Server unreachable — cached data is fine
-    } finally {
-      setRefreshing(false)
-    }
-  }
-
-  if (!sub) {
-    return (
-      <EmptyState
-        icon={<HourglassIcon size={36} color="var(--color-text-muted)" />}
-        text="No account found. Please reinstall to set up a new account."
-      />
-    )
-  }
-
-  // daysLeft comes from the server after the first 24h validation.
-  // Before that, compute it locally from trialEndsAt so it shows correctly immediately.
-  const daysLeft = sub.daysLeft ??
-    (sub.trialEndsAt
-      ? Math.max(0, Math.ceil((new Date(sub.trialEndsAt).getTime() - Date.now()) / 86_400_000))
-      : 0)
-  const st = STATUS_STYLE[sub.status] ?? STATUS_STYLE["not_found"]!
-
-  const { monthlyUrl, yearlyUrl, configured } = getCheckoutUrls(sub.email)
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Status badge + refresh */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <span
-          style={{
-            padding: "0.3rem 0.9rem",
-            borderRadius: 20,
-            background: st.bg,
-            color: st.color,
-            fontSize: "0.875rem",
-            fontWeight: 700,
-          }}
-        >
-          {st.label}
-        </span>
-        {(sub.status === "trial" || sub.status === "grace") && daysLeft !== null && (
-          <span style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
-            {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
-          </span>
-        )}
-        <button
-          onClick={() => fetchLive(sub)}
-          disabled={refreshing}
-          title="Refresh from server"
-          style={{
-            marginLeft: "auto",
-            background: "none",
-            border: "none",
-            cursor: refreshing ? "default" : "pointer",
-            color: "var(--color-text-muted)",
-            fontSize: "0.8rem",
-            opacity: refreshing ? 0.5 : 1,
-            padding: "0.2rem 0.4rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.3rem",
-          }}
-        >
-          {refreshing ? "Checking…" : "↻ Refresh"}
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "0.75rem",
-        }}
-      >
-        {sub.email && <StatCard label="Account" value={sub.email} />}
-        <StatCard label="Pages visited" value={String(logCount)} />
-        {sub.trialEndsAt && (
-          <StatCard
-            label="Trial ends"
-            value={new Date(sub.trialEndsAt).toLocaleDateString()}
-          />
-        )}
-        {sub.lastValidatedAt && (
-          <StatCard
-            label="Last checked"
-            value={new Date(sub.lastValidatedAt).toLocaleDateString()}
-          />
-        )}
-      </div>
-
-      {/* Subscribe CTA */}
-      {configured && (sub.status === "trial" || sub.status === "grace" || sub.status === "expired") && (
-        <div
-          style={{
-            padding: "1.2rem",
-            borderRadius: 12,
-            background: "var(--color-surface)",
-            border: "1.5px solid var(--color-surface-edge)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.6rem",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.25rem" }}>
-            <CreditCardIcon size={28} color="var(--color-text-muted)" />
-          </div>
-          <div style={{ fontWeight: 700, textAlign: "center" as const }}>
-            Subscribe to keep using SeniorBrowse
-          </div>
-          <a
-            href={yearlyUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "block",
-              padding: "0.75rem",
-              background: "var(--color-accent)",
-              color: "#fff",
-              borderRadius: "var(--radius-md)",
-              fontWeight: 700,
-              fontSize: "0.95rem",
-              textDecoration: "none",
-              textAlign: "center" as const,
-            }}
-          >
-            $39.99 / year (best value)
-          </a>
-          <a
-            href={monthlyUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "block",
-              padding: "0.65rem",
-              background: "transparent",
-              color: "var(--color-text-muted)",
-              border: "1.5px solid var(--color-surface-edge)",
-              borderRadius: "var(--radius-md)",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              textDecoration: "none",
-              textAlign: "center" as const,
-            }}
-          >
-            $4.99 / month
-          </a>
-          {/* CUX-02: After subscribing, tell the user to hit Refresh so the
-              status updates immediately rather than waiting for the next
-              background validation cycle. */}
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.78rem",
-              color: "var(--color-text-muted)",
-              textAlign: "center" as const,
-              lineHeight: 1.5,
-            }}
-          >
-            After subscribing, come back here and click{" "}
-            <strong style={{ color: "var(--color-text)" }}>↻ Refresh</strong>{" "}
-            to activate your account instantly.
-          </p>
-        </div>
-      )}
-
-      {/* Protected by SeniorBrowse — quiet trust mark at the bottom of the
-          License tab. Tilted slightly to feel stamped-by-hand. */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          paddingTop: "0.5rem",
-          paddingBottom: "0.25rem",
-        }}
-      >
-        <img
-          src="/brand/stamp-protected.svg"
-          alt="Protected by SeniorBrowse"
-          style={{
-            height: 64,
-            width: "auto",
-            transform: "rotate(-3deg)",
-            opacity: 0.92,
-          }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        padding: "0.75rem",
-        borderRadius: 10,
-        background: "var(--color-surface)",
-        border: "1.5px solid var(--color-surface-edge)",
-      }}
-    >
-      <div
-        style={{
-          fontSize: "0.78rem",
-          color: "var(--color-text-muted)",
-          marginBottom: 3,
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: "1rem",
-          color: "var(--color-text)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-        title={value}
-      >
-        {value}
-      </div>
-    </div>
-  )
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
@@ -2419,7 +2097,7 @@ function Spinner() {
 
 // ── M-01 Modal shell ──────────────────────────────────────────────────────────
 
-type Tab = "profile" | "security" | "savedLinks" | "activityLog" | "trial"
+type Tab = "profile" | "security" | "savedLinks" | "activityLog"
 
 interface TabMeta {
   id: Tab
@@ -2460,13 +2138,6 @@ const TABS: TabMeta[] = [
     title: "Activity log",
     subtitle: "Every website visited, with timestamps.",
     icon: <ClipboardTextIcon size={14} />,
-  },
-  {
-    id: "trial",
-    label: "Billing",
-    title: "Billing",
-    subtitle: "Trial status, subscription, account email.",
-    icon: <StarIcon size={14} />,
   },
 ]
 
@@ -2803,7 +2474,6 @@ export function SettingsModal({ onClose, onStartSeniorTour }: ModalProps) {
             {activeTab === "activityLog" && (
               <ActivityLogTab showToast={showToast} />
             )}
-            {activeTab === "trial" && <TrialTab />}
           </div>
         </section>
       </div>

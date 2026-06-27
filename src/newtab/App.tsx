@@ -1,18 +1,14 @@
-// U-02: expired-state guard renders before anything else.
 import { useEffect, useState } from "react"
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   HandWavingIcon,
-  HeartIcon,
   ListIcon,
   LockSimpleIcon,
   MoonIcon,
   SunIcon,
-  XIcon,
 } from "@phosphor-icons/react"
 import { storage } from "@shared/storage"
-import { getCheckoutUrls } from "@shared/checkout"
 import { WelcomeBanner } from "./components/WelcomeBanner"
 import { Clock } from "./components/Clock"
 import { SearchBar } from "./components/SearchBar"
@@ -35,12 +31,10 @@ export function App() {
 
   const [seniorName, setSeniorName] = useState("")
   const [caregiverName, setCaregiverName] = useState("")
-  const [accountEmail, setAccountEmail] = useState("")
   const [showSettings, setShowSettings] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const [showPinModal, setShowPinModal] = useState(false)
-  const [isExpired, setIsExpired] = useState(false)
   const [ready, setReady] = useState(false)
   const [panelEnabled, setPanelEnabled] = useState(true)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -50,23 +44,11 @@ export function App() {
   useEffect(() => {
     ;(async () => {
       try {
-        const [config, sub] = await Promise.all([
-          storage.local.get("config"),
-          storage.local.get("subscription"),
-        ])
+        const config = await storage.local.get("config")
         setSeniorName(config.seniorName)
         setCaregiverName(config.caregiverName)
         setPanelEnabled(config.panelEnabled !== false)
         setPanelPosition(config.panelPosition ?? "left")
-
-        // U-02: expired guard — hide all content from the senior.
-        // Also covers "not_found" (license row deleted from DB).
-        if (sub?.status === "expired" || sub?.status === "not_found") {
-          setIsExpired(true)
-          if (sub.email) setAccountEmail(sub.email)
-          setReady(true)
-          return
-        }
 
         // O-01: show setup wizard on first install
         if (!config.onboardingDone) {
@@ -116,20 +98,6 @@ export function App() {
         )
           setShowTour(true)
       }
-
-      // B-11: enforce trial expiry mid-session.
-      // The service worker validates the license every 24 h in the background.
-      // If the status flips to "expired" or "not_found" while the senior is
-      // actively browsing, lock the screen immediately without waiting for a reload.
-      if (area === "local" && "subscription" in changes) {
-        const newSub = changes["subscription"]!.newValue as
-          | { status?: string; email?: string }
-          | undefined
-        if (newSub?.status === "expired" || newSub?.status === "not_found") {
-          setIsExpired(true)
-          if (newSub.email) setAccountEmail(newSub.email)
-        }
-      }
     }
     chrome.storage.onChanged.addListener(onChange)
     return () => chrome.storage.onChanged.removeListener(onChange)
@@ -144,200 +112,6 @@ export function App() {
     }
     setShowWizard(false)
     setReady(true)
-  }
-
-  // U-02: expired screen — senior sees "needs attention"; caregiver sees subscribe options
-  if (ready && isExpired) {
-    const { monthlyUrl, yearlyUrl, configured } = getCheckoutUrls(accountEmail)
-
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-          background: "var(--color-bg)",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center" as const,
-            maxWidth: 520,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "1.75rem",
-          }}
-        >
-          {/* Warm icon — nothing technical or alarming */}
-          <HeartIcon size={56} weight="fill" color="var(--color-accent)" />
-
-          {/* Senior-facing message — reassuring, no technical detail */}
-          <div>
-            <h1
-              style={{
-                fontSize: "1.6rem",
-                fontWeight: 800,
-                color: "var(--color-text)",
-                margin: "0 0 0.6rem",
-                lineHeight: 1.25,
-              }}
-            >
-              Just a short pause
-            </h1>
-            <p
-              style={{
-                fontSize: "1.05rem",
-                color: "var(--color-text-muted)",
-                margin: 0,
-                lineHeight: 1.7,
-                maxWidth: 420,
-              }}
-            >
-              Everything is perfectly fine — your favourites and settings are
-              all safe!{" "}
-              <strong style={{ color: "var(--color-text)" }}>
-                {caregiverName || "Your caregiver"}
-              </strong>{" "}
-              will take care of a quick renewal and you'll be back in no time.
-            </p>
-          </div>
-
-          {/* Caregiver-only section — labelled so seniors don't worry about it */}
-          {configured && (
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 360,
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.75rem",
-              }}
-            >
-              {/* Subtle "for caregiver" divider */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: "var(--color-surface-edge)",
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--color-text-subtle)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  For {caregiverName || "the caregiver"}
-                </span>
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: "var(--color-surface-edge)",
-                  }}
-                />
-              </div>
-
-              <a
-                href={yearlyUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: "block",
-                  padding: "0.9rem 1.5rem",
-                  background: "var(--color-accent)",
-                  color: "#fff",
-                  borderRadius: "var(--radius-md)",
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  textDecoration: "none",
-                  textAlign: "center" as const,
-                }}
-              >
-                Subscribe — $39.99 / year
-              </a>
-              <a
-                href={monthlyUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: "block",
-                  padding: "0.75rem 1.5rem",
-                  background: "transparent",
-                  color: "var(--color-text-muted)",
-                  border: "1.5px solid var(--color-surface-edge)",
-                  borderRadius: "var(--radius-md)",
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                  textDecoration: "none",
-                  textAlign: "center" as const,
-                }}
-              >
-                Monthly — $4.99 / month
-              </a>
-            </div>
-          )}
-
-          {/* Close the helper panel — the panel has no obvious ✕ of its own,
-              and while the newtab is paused the senior shouldn't feel
-              trapped. Browsing other sites keeps working when expired;
-              this just gives the screen space back. */}
-          {panelOpen && (
-            <button
-              type="button"
-              onClick={() => {
-                chrome.runtime
-                  .sendMessage({ type: "CLOSE_PANEL_REQUEST" })
-                  .catch(() => {})
-              }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 1.5rem",
-                minHeight: 48,
-                background: "transparent",
-                color: "var(--color-text-muted)",
-                border: "1.5px solid var(--color-surface-edge)",
-                borderRadius: "var(--radius-md)",
-                fontWeight: 600,
-                fontSize: "1rem",
-                fontFamily: "inherit",
-                cursor: "pointer",
-                transition: "background 0.18s, color 0.18s, border-color 0.18s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--color-surface)"
-                e.currentTarget.style.color = "var(--color-text)"
-                e.currentTarget.style.borderColor = "var(--color-surface-edge-mid)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent"
-                e.currentTarget.style.color = "var(--color-text-muted)"
-                e.currentTarget.style.borderColor = "var(--color-surface-edge)"
-              }}
-            >
-              <XIcon size={18} weight="bold" />
-              Close the helper panel
-            </button>
-          )}
-        </div>
-      </main>
-    )
   }
 
   // O-01: full-screen wizard (shown before anything else on first install)
@@ -516,7 +290,7 @@ export function App() {
         </div>
       </main>
 
-      {/* M-01..M-06 — Settings modal (admin-only) */}
+      {/* M-01..M-05 — Settings modal (admin-only) */}
       {showSettings && (
         <SettingsModal
           onClose={() => setShowSettings(false)}

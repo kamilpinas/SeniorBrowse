@@ -1,6 +1,6 @@
 // B-01: Service worker bootstrap + message routing.
 // Wires together: admin toggle, safe-browsing, download blocker,
-// activity logger, trial manager, and ad blocking.
+// activity logger, and ad blocking.
 
 import { storage } from "@shared/storage"
 import type { Config } from "@shared/types"
@@ -8,7 +8,6 @@ import type { IncomingMessage, MessageResponse } from "@shared/messages"
 import { checkUrl } from "./safetyCheck"
 import { handleDownload } from "./downloadBlocker"
 import { logActivity } from "./activityLogger"
-import { ensureTrialStatus } from "./licenseManager"
 import { updateAdBlocking } from "./adBlocker"
 
 // ── Install / update ───────────────────────────────────────────────────────
@@ -19,16 +18,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const config = await storage.local.get("config")
     await storage.local.set("config", config)
 
-    // Generate a stable device ID used to prevent repeated free trials from
-    // the same browser even when different email addresses are entered.
-    const existingId = await storage.local.get("installId")
-    if (!existingId) {
-      await storage.local.set("installId", crypto.randomUUID())
-    }
-
     console.info("[SeniorBrowse] default config seeded")
   }
-  await ensureTrialStatus()
   const config = await storage.local.get("config")
   await updateAdBlocking(config.security.blockAds)
 
@@ -44,20 +35,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   console.info("[SeniorBrowse] service worker ready")
 })
 
-// Refresh trial status every time the service worker wakes up.
-ensureTrialStatus().catch(console.error)
-
 // Re-apply panel behaviour on every worker wake-up (lost when SW is killed).
 // Wrapped in try-catch for Chromium forks that lack sidePanel (EC-08).
 chrome.sidePanel
   ?.setPanelBehavior({ openPanelOnActionClick: true })
   .catch(console.error)
-
-// DS-05: Ensure installId exists on every SW wake — guards against users who
-// clear browser storage (which would allow a second free trial).
-storage.local.get("installId").then((id) => {
-  if (!id) return storage.local.set("installId", crypto.randomUUID())
-}).catch(console.error)
 
 // ── Real-time panel state via onClosed / onOpened (Chrome 141+/142+) ─────────
 // These are the authoritative events — they fire for every open/close including
@@ -174,12 +156,6 @@ async function handleMessage(
         await storage.session.set("adminModeActive", msg.payload.active)
         broadcastAdminMode(msg.payload.active)
         return { ok: true, data: { active: msg.payload.active } }
-      }
-
-      case "CHECK_TRIAL_STATUS": {
-        await ensureTrialStatus()
-        const sub = await storage.local.get("subscription")
-        return { ok: true, data: sub }
       }
 
       case "LOG_ACTIVITY": {

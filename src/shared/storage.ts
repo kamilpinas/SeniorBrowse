@@ -7,7 +7,6 @@ import type {
   FontSize,
   SavedLink,
   Shortcut,
-  Subscription,
 } from './types'
 
 /** Persisted PIN brute-force counter — survives reload/restart so a wrong
@@ -23,9 +22,6 @@ export interface LocalStore {
   shortcuts: Shortcut[]
   savedLinks: SavedLink[]
   activityLog: ActivityLogEntry[]
-  subscription: Subscription | null
-  /** Stable UUID generated on first install — sent with license registration to prevent device reuse of free trial. */
-  installId: string
   pinLockout: PinLockoutState
 }
 
@@ -57,8 +53,6 @@ const DEFAULTS: { local: LocalStore; session: SessionStore } = {
     shortcuts: [],
     savedLinks: [],
     activityLog: [],
-    subscription: null,
-    installId: "",
     pinLockout: { failCount: 0, lockedUntil: null },
   },
   session: {
