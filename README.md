@@ -2,7 +2,7 @@
 
 ### The browser extension that makes the internet safe and easy for your loved ones — while giving you full control behind the scenes.
 
-[Install for Chrome](#) &nbsp;·&nbsp; [Start Free 7-Day Trial](#) &nbsp;·&nbsp; [See How It Works](#)
+[Install for Chrome — It's Free](#) &nbsp;·&nbsp; [See How It Works](#)
 
 ---
 
@@ -84,13 +84,9 @@ You stay in the background. They browse with confidence. Check in on the activit
 
 ---
 
-## Try it free for 7 days
+## Completely free
 
-No credit card required. Full access to every feature. If you decide to continue after the trial, a simple subscription keeps everything running.
-
-The trial countdown is only visible to you — your loved one never sees any mention of trials, payments, or subscriptions.
-
-**[Start your free 7-day trial →](#)**
+No account, no trial, no subscription. Install it and every feature is available right away — for you and for them.
 
 ---
 
