@@ -23,7 +23,7 @@ if (
 // ── Panel-closed banner ───────────────────────────────────────────────────────
 // A large, senior-friendly sticky banner fixed at the BOTTOM of the page.
 // The senior can still read and scroll the page above it.
-// Previous design was a full-screen blocker (UX-03 audit finding).
+// Previous design was a full-screen blocker — that was an audit finding.
 
 function showOverlay() {
   if (document.getElementById("sw-closed-overlay")) return

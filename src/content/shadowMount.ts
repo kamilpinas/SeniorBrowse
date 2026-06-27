@@ -1,5 +1,5 @@
-// P-01: Shadow DOM mount — injects the side panel into every page.
-// P-02: Layout detection — column push or floating overlay.
+// Shadow DOM mount — injects the side panel into every page.
+// Layout detection — column push or floating overlay.
 
 import { h, render } from 'preact'
 import { storage } from '@shared/storage'
@@ -7,7 +7,7 @@ import { SidePanel } from './SidePanel'
 
 const PANEL_WIDTH = 240
 
-// ── Layout detection (P-02) ───────────────────────────────────────────────────
+// ── Layout detection ───────────────────────────────────────────────────────
 // We want column mode (body push) on as many sites as possible.
 // Floating mode is reserved only for true SPA "fixed shells" where pushing
 // the body has no effect (e.g. Gmail, YouTube).
@@ -39,7 +39,7 @@ function detectMode(): 'column' | 'floating' {
   return 'column'
 }
 
-// ── Zoom styles injected into outer document (P-04) ───────────────────────────
+// ── Zoom styles injected into outer document ──────────────────────────────
 
 function injectZoomStyles() {
   const id = 'seniorbrowse-zoom-styles'
