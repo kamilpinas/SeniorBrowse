@@ -7,24 +7,13 @@
 project_id = "xcthxnqldravnuyyapzh"
 
 # ── Edge Functions ───────────────────────────────────────────────────────────
-# These endpoints are INTENTIONALLY PUBLIC. The extension calls register-license,
-# validate-license, and check-url with no Supabase JWT, and Lemon Squeezy calls
-# the webhook with an HMAC signature (not a JWT). They protect themselves via
-# per-IP rate limiting, input validation, and (webhook) signature verification.
+# This endpoint is INTENTIONALLY PUBLIC. The extension calls check-url with no
+# Supabase JWT. It protects itself via per-IP rate limiting and input validation.
 #
 # verify_jwt MUST stay false. If it is true, Supabase's gateway rejects every
 # header-less call with 401 "Missing authorization header" before the function
 # code runs. The CLI defaults verify_jwt to TRUE, so pinning it here prevents a
-# routine `supabase functions deploy` from silently breaking onboarding.
-
-[functions.register-license]
-verify_jwt = false
-
-[functions.validate-license]
-verify_jwt = false
+# routine `supabase functions deploy` from silently breaking Safe Browsing checks.
 
 [functions.check-url]
-verify_jwt = false
-
-[functions.lemon-squeezy-webhook]
 verify_jwt = false
