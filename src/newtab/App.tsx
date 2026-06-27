@@ -50,7 +50,7 @@ export function App() {
         setPanelEnabled(config.panelEnabled !== false)
         setPanelPosition(config.panelPosition ?? "left")
 
-        // O-01: show setup wizard on first install
+        // show setup wizard on first install
         if (!config.onboardingDone) {
           setShowWizard(true)
         }
@@ -103,6 +103,13 @@ export function App() {
     return () => chrome.storage.onChanged.removeListener(onChange)
   }, [])
 
+  // Settings is admin-only — if admin mode exits from elsewhere (e.g. the
+  // side panel's "Done" button), close the modal here too so it can't be
+  // left open with no way back into admin mode.
+  useEffect(() => {
+    if (!adminMode) setShowSettings(false)
+  }, [adminMode])
+
   // Re-read names after wizard completes (names may have just been set)
   const handleWizardComplete = async () => {
     const config = await storage.local.get("config").catch(() => null)
@@ -114,7 +121,7 @@ export function App() {
     setReady(true)
   }
 
-  // O-01: full-screen wizard (shown before anything else on first install)
+  // full-screen wizard (shown before anything else on first install)
   if (showWizard) {
     return <OnboardingWizard onComplete={handleWizardComplete} />
   }
@@ -217,7 +224,7 @@ export function App() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* A-02: fixed edit-mode banner */}
+      {/* fixed edit-mode banner */}
       {adminMode && (
         <AdminBanner
           onDone={exitAdminMode}
@@ -243,7 +250,7 @@ export function App() {
           gap: "clamp(0.6rem,1.4vh,1.5rem)",
         }}
       >
-        {/* N-06 — font recovery prompt */}
+        {/* font recovery prompt */}
         {showRecoveryPrompt && (
           <FontSizeRecovery
             seniorName={seniorName}
@@ -266,13 +273,11 @@ export function App() {
           <Clock />
         </div>
 
-        {/* N-04 */}
         <SearchBar />
 
         {/* 3 most recently visited sites, deduped by hostname */}
         <RecentSites />
 
-        {/* N-05 + A-03..A-06 */}
         <div
           className="sw-fade-up sw-stagger-4"
           style={{
@@ -290,7 +295,7 @@ export function App() {
         </div>
       </main>
 
-      {/* M-01..M-05 — Settings modal (admin-only) */}
+      {/* Settings modal (admin-only) */}
       {showSettings && (
         <SettingsModal
           onClose={() => setShowSettings(false)}
@@ -304,7 +309,7 @@ export function App() {
       {/* Panel button removed — panel is always-open by design.
           If closed, the gate screen above handles re-opening. */}
 
-      {/* Dark / light mode toggle — fixed bottom-left, caregiver-only (UX-06).
+      {/* Dark / light mode toggle — fixed bottom-left, caregiver-only.
           Hidden from seniors to prevent accidental theme changes. */}
       {adminMode && (
         <button
@@ -404,7 +409,7 @@ export function App() {
         />
       )}
 
-      {/* O-02 — Senior walkthrough */}
+      {/* Senior walkthrough */}
       {showTour && (
         <SeniorWalkthrough
           seniorName={seniorName}

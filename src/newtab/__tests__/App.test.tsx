@@ -9,7 +9,7 @@ import {
 import { App } from "../App"
 
 // App.tsx is the top-level gate: it decides, before anything else renders,
-// whether the senior sees the onboarding wizard (O-01), the "open your
+// whether the senior sees the onboarding wizard, the "open your
 // panel first" gate, or the real newtab UI.
 // Unlike AdminPinModal/OnboardingWizard/SettingsModal — which only touch
 // @shared/storage — App also talks to chrome.storage.session/onChanged and
@@ -61,5 +61,37 @@ describe("App", () => {
     const user = userEvent.setup()
     await user.click(screen.getByRole("button", { name: /Edit mode/ }))
     expect(await screen.findByText("Caregiver access")).toBeInTheDocument()
+  })
+
+  it("closes the Settings modal when admin mode exits from another surface (e.g. the side panel's Done button)", async () => {
+    // adminModeActive starts true here to skip the PIN flow — we're testing
+    // what happens when *another* tab/surface broadcasts admin mode off
+    // while Settings is open in this one, not how admin mode is entered.
+    // useAdminMode reads it via @shared/storage (not the raw chrome mock),
+    // so it has to be set the same way — see panelOpen below for the
+    // contrast: App reads that one directly off chrome.storage.session.
+    await setConfig()
+    await storage.session.set("adminModeActive", true)
+    await chromeMock.storage.session.set({ panelOpen: true })
+    render(<App />)
+
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole("button", { name: /Settings/ }))
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
+
+    // Simulate the ADMIN_MODE_CHANGED broadcast that exitAdminMode sends —
+    // as if the side panel's "Done" button had been clicked, not this tab's
+    // own banner. Settings has no other way to hear about that.
+    for (const listener of chromeMock._onMessageListeners) {
+      listener(
+        { type: "ADMIN_MODE_CHANGED", payload: { active: false } },
+        {},
+        () => {},
+      )
+    }
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    )
   })
 })
