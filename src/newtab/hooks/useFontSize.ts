@@ -1,6 +1,6 @@
 // Reads currentFontSize from session storage and applies browser-level zoom
 // to <html> before the first paint. Also detects when the senior changed the
-// font last session and returns a recovery prompt flag (N-06).
+// font last session and returns a recovery prompt flag.
 //
 // Zoom is applied via document.documentElement.style.zoom (same scale as
 // chrome.tabs.setZoom) so it works on extension pages where setZoom is
@@ -23,7 +23,7 @@ export interface FontSizeState {
   current: FontSize
   /**
    * True when the senior changed the font last session and it differs from the
-   * caregiver's default. Shows the recovery prompt (N-06 spec).
+   * caregiver's default. Shows the recovery prompt.
    */
   showRecoveryPrompt: boolean
   /** Dismiss the prompt without changing anything. */
@@ -67,7 +67,7 @@ export function useFontSize(): FontSizeState {
         // the panel earlier in this same Chrome session). Only fall back to the
         // caregiver's default when the session key is null, meaning this is a
         // brand-new browser session and no font choice has been made yet.
-        // Never overwrite a non-null session value — that was the B-07 bug.
+        // Never overwrite a non-null session value — that was a real bug previously.
         const active: FontSize = (session ?? def) as FontSize
         if (session === null) {
           // First new-tab of a fresh browser session — seed the session key.

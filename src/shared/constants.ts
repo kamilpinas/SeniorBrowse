@@ -51,14 +51,14 @@ export const ACTIVITY_TYPES: readonly ActivityType[] = [
   "save",
 ]
 
-// User-visible font size labels — shown on the panel zoom button (P-04).
+// User-visible font size labels — shown on the panel zoom button.
 export const FONT_SIZE_LABELS: Record<FontSize, string> = {
   normal: "normal",
   large: "large",
   xlarge: "x-large",
 }
 
-// ── Panel button defaults (A-07, A-08) ───────────────────────────────────────
+// ── Panel button defaults ─────────────────────────────────────────────────
 
 /** Canonical button IDs in default display order. */
 export const DEFAULT_PANEL_BUTTON_ORDER: string[] = [

@@ -1,4 +1,4 @@
-// O-02: Senior walkthrough — spotlight tour over the real newtab elements.
+// Senior walkthrough — spotlight tour over the real newtab elements.
 // Instead of a centered modal with illustrations, each step focuses an actual
 // DOM element on the page (greeting, search bar, shortcuts) using a
 // box-shadow cutout. The spotlight slides smoothly between elements.

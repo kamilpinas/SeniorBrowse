@@ -1,4 +1,4 @@
-// B-04: Append entries to the activity log, capped at MAX_LOG_ENTRIES and
+// Append entries to the activity log, capped at MAX_LOG_ENTRIES and
 // pruned of anything older than MAX_LOG_AGE_DAYS. Oldest entries are dropped
 // first when the count cap is reached.
 

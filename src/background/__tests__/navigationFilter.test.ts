@@ -1,5 +1,5 @@
 // Covers the chrome.webNavigation.onBeforeNavigate listener in
-// service-worker.ts — the B-06 hard blacklist gate plus the bundled +
+// service-worker.ts — the hard blacklist gate plus the bundled +
 // periodically-refreshed malware domain list, both of which decide whether
 // a navigation proceeds or gets redirected to blocked.html.
 
@@ -56,7 +56,7 @@ describe("onBeforeNavigate — basic guards", () => {
   })
 })
 
-describe("onBeforeNavigate — blacklist (B-06)", () => {
+describe("onBeforeNavigate — blacklist", () => {
   it("hard-blocks an exact blacklisted hostname", async () => {
     const { mock, storage, listener } = await loadNavigationListener()
     await storage.local.update("config", { security: { blacklist: ["evil.com"] } })

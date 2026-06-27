@@ -1,4 +1,4 @@
-// B-03: Cancel downloads when config.security.blockDownloads is enabled.
+// Cancel downloads when config.security.blockDownloads is enabled.
 // chrome.downloads.onCreated fires before the file is written to disk, so
 // cancelling here is safe and leaves no partial file.
 

@@ -1,4 +1,4 @@
-// A-01 / A-02: Read admin mode from session storage and keep it live via
+// Read admin mode from session storage and keep it live via
 // chrome.runtime.onMessage (ADMIN_MODE_CHANGED from background).
 
 import { useEffect, useState } from "react"

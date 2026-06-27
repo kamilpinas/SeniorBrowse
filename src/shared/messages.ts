@@ -1,4 +1,4 @@
-// B-01: Typed chrome.runtime message bus.
+// Typed chrome.runtime message bus.
 // Background ↔ content scripts / extension pages.
 
 import type { ActivityType, FontSize } from './types'

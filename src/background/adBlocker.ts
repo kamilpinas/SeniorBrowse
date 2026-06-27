@@ -1,4 +1,4 @@
-// B-07: Toggle the static ad-blocking rule set via declarativeNetRequest.
+// Toggle the static ad-blocking rule set via declarativeNetRequest.
 // The rule set "ad_block_rules" is declared in manifest.json with enabled:false.
 
 const RULESET_ID = 'ad_block_rules'

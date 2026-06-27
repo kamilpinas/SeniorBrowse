@@ -1,5 +1,5 @@
 // Recovery prompt shown when the senior changed font size last session and
-// it differs from the caregiver's default (N-06).
+// it differs from the caregiver's default.
 
 interface Props {
   seniorName: string

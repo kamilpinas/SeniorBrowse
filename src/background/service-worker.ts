@@ -1,4 +1,4 @@
-// B-01: Service worker bootstrap + message routing.
+// Service worker bootstrap + message routing.
 // Wires together: admin toggle, blacklist + malware navigation guard,
 // download blocker, activity logger, and ad blocking.
 
@@ -29,7 +29,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
   // Make the toolbar icon open/close the native side panel.
   // This replaces the old onClicked admin-toggle behaviour.
-  // Wrapped in try-catch: some Chromium forks don't implement sidePanel (EC-08).
+  // Wrapped in try-catch: some Chromium forks don't implement sidePanel.
   try {
     await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
   } catch {
@@ -44,7 +44,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 })
 
 // Re-apply panel behaviour on every worker wake-up (lost when SW is killed).
-// Wrapped in try-catch for Chromium forks that lack sidePanel (EC-08).
+// Wrapped in try-catch for Chromium forks that lack sidePanel.
 chrome.sidePanel
   ?.setPanelBehavior({ openPanelOnActionClick: true })
   .catch(console.error)
@@ -116,7 +116,7 @@ chrome.runtime.onMessage.addListener(
   },
 )
 
-// ── Message routing (B-01) ────────────────────────────────────────────────
+// ── Message routing ────────────────────────────────────────────────────────
 // Note: toolbar icon click is now handled by chrome.sidePanel (openPanelOnActionClick).
 // Admin mode is toggled from the side panel's PIN entry or the newtab 🔒 button.
 
@@ -196,7 +196,7 @@ async function handleMessage(
       }
 
       case "OPEN_SIDE_PANEL":
-        // B-02: This path is intentionally unreachable at runtime — the
+        // This path is intentionally unreachable at runtime — the
         // dedicated onMessage listener above this switch intercepts
         // OPEN_SIDE_PANEL first (before handleMessage is called) so it has
         // access to sender.tab.windowId. Kept here only for TypeScript
@@ -217,7 +217,7 @@ async function handleMessage(
   }
 }
 
-// ── Navigation filter — B-06 (blacklist) + malware domain list ───────────
+// ── Navigation filter — blacklist + malware domain list ──────────────────
 
 chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
   // Main frame only; ignore iframes, pre-renders, etc.
@@ -235,7 +235,7 @@ chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
     return // malformed URL — let it through
   }
 
-  // B-06: Hard blacklist check.
+  // Hard blacklist check.
   if (hostMatches(hostname, config.security.blacklist)) {
     await redirectTab(tabId, `blocked.html?url=${encodeURIComponent(url)}`)
     return
@@ -258,14 +258,14 @@ async function redirectTab(tabId: number, relativeUrl: string): Promise<void> {
   }
 }
 
-// ── Download blocker (B-03) ───────────────────────────────────────────────
+// ── Download blocker ───────────────────────────────────────────────────────
 
 chrome.downloads.onCreated.addListener(async (item) => {
   const config = await storage.local.get("config")
   await handleDownload(item, config.security.blockDownloads)
 })
 
-// ── Activity logger (B-04) ────────────────────────────────────────────────
+// ── Activity logger ────────────────────────────────────────────────────────
 
 // Zoom factor for each font-size name — mirrors the mapping in sidepanel/App.tsx.
 const FONT_ZOOM: Record<string, number> = { normal: 1, large: 1.25, xlarge: 1.5 }
@@ -299,7 +299,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 })
 
-// ── Config changes → sync ad blocking (B-07) ──────────────────────────────
+// ── Config changes → sync ad blocking ─────────────────────────────────────
 
 chrome.storage.onChanged.addListener(async (changes, area) => {
   if (area !== "local") return

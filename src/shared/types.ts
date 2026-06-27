@@ -21,7 +21,7 @@ export interface UIConfig {
   showBrowserSettings: boolean
 }
 
-/** Per-button admin config for the side panel (A-08). */
+/** Per-button admin config for the side panel. */
 export interface PanelButtonConfig {
   label: string
   visible: boolean
@@ -34,11 +34,11 @@ export interface Config {
   defaultFontSize: FontSize
   security: SecurityConfig
   ui: UIConfig
-  /** Ordered list of panel button IDs (A-07). */
+  /** Ordered list of panel button IDs. */
   panelButtonOrder: string[]
-  /** Per-button overrides keyed by button ID (A-08). */
+  /** Per-button overrides keyed by button ID. */
   panelButtons: Record<string, PanelButtonConfig>
-  /** Set to true after caregiver completes (or skips) the setup wizard (O-01). */
+  /** Set to true after caregiver completes (or skips) the setup wizard. */
   onboardingDone: boolean
   /** Set to true after the side-panel intro wizard is dismissed. */
   panelWizardDone: boolean

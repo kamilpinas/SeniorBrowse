@@ -1,4 +1,4 @@
-// A-02: Persistent "Edit mode" banner shown when adminModeActive is true.
+// Persistent "Edit mode" banner shown when adminModeActive is true.
 
 import { CheckIcon, GearIcon, PencilSimpleIcon } from "@phosphor-icons/react"
 
