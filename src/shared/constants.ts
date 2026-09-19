@@ -20,6 +20,15 @@ export const MAX_LOG_AGE_DAYS = 90
 // UX timings.
 export const UNDO_TOAST_MS = 5000
 
+// Branded page opened by Chrome immediately after the extension is uninstalled
+// (via chrome.runtime.setUninstallURL). Chrome offers no API to block or delay
+// uninstallation, so this reminder — asking the user to check with their
+// caregiver, with a one-click reinstall link — is the closest available fallback.
+// Hosted on the marketing site, since the extension's own pages no longer exist
+// once it's uninstalled. seniorName / caregiverName are appended as query params
+// so the page can greet the senior and name their caregiver.
+export const UNINSTALL_REMINDER_URL = "https://seniorbrowse.pages.dev/uninstall"
+
 // Value-list enums (runtime arrays paired with string-union types).
 export const FONT_SIZES: readonly FontSize[] = ["normal", "large", "xlarge"]
 export const THEME_COLORS: readonly ThemeColor[] = ["red", "blue", "green"]

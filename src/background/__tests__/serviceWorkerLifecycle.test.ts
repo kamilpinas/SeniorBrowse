@@ -279,6 +279,77 @@ describe("storage.onChanged — ad-block sync", () => {
   })
 })
 
+describe("post-uninstall reminder (setUninstallURL)", () => {
+  it("sets the reminder URL on install (bare, before names are entered)", async () => {
+    const { mock } = await loadServiceWorker()
+    const onInstalled = getListener<(d: { reason: string }) => Promise<void>>(
+      mock.runtime.onInstalled.addListener,
+    )
+
+    await onInstalled({ reason: "install" })
+
+    expect(mock.runtime.setUninstallURL).toHaveBeenCalledWith(
+      "https://seniorbrowse.pages.dev/uninstall",
+    )
+  })
+
+  it("re-applies a personalised URL when the names change", async () => {
+    const { mock } = await loadServiceWorker()
+    const listener = getListener<
+      (
+        changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
+        area: string,
+      ) => Promise<void>
+    >(mock.storage.onChanged.addListener)
+
+    await listener(
+      {
+        config: {
+          oldValue: { seniorName: "", caregiverName: "" },
+          newValue: { seniorName: "Grandpa", caregiverName: "Mom" },
+        },
+      },
+      "local",
+    )
+
+    const url = new URL(mock.runtime.setUninstallURL.mock.calls.at(-1)![0] as string)
+    expect(url.searchParams.get("senior")).toBe("Grandpa")
+    expect(url.searchParams.get("caregiver")).toBe("Mom")
+  })
+
+  it("does not re-apply when a config change leaves the names untouched", async () => {
+    const { mock } = await loadServiceWorker()
+    const listener = getListener<
+      (
+        changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
+        area: string,
+      ) => Promise<void>
+    >(mock.storage.onChanged.addListener)
+    mock.runtime.setUninstallURL.mockClear()
+
+    await listener(
+      {
+        config: {
+          oldValue: { seniorName: "Grandpa", caregiverName: "Mom" },
+          newValue: { seniorName: "Grandpa", caregiverName: "Mom", theme: "dark" },
+        },
+      },
+      "local",
+    )
+
+    expect(mock.runtime.setUninstallURL).not.toHaveBeenCalled()
+  })
+
+  it("does not throw when setUninstallURL is unsupported", async () => {
+    const { mock } = await loadServiceWorker()
+    mock.runtime.setUninstallURL.mockRejectedValueOnce(new Error("unsupported"))
+    const onInstalled = getListener<(d: { reason: string }) => Promise<void>>(
+      mock.runtime.onInstalled.addListener,
+    )
+    await expect(onInstalled({ reason: "install" })).resolves.toBeUndefined()
+  })
+})
+
 describe("sidePanel onOpened/onClosed broadcast", () => {
   it("on open: marks the session panelOpen and notifies every http(s) tab", async () => {
     const { mock } = await loadServiceWorker()

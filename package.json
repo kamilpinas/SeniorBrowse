@@ -1,6 +1,6 @@
 {
   "name": "seniorbrowse",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "SeniorBrowse — Chrome extension that lets older adults browse safely. MVP scaffold.",
@@ -16,7 +16,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "package": "node scripts/package.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -38,6 +39,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^4.1.9",
     "@vitest/ui": "^4.1.9",
+    "archiver": "^7.0.1",
     "jsdom": "^29.1.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.0",
