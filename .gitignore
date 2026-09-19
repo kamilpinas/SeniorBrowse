@@ -4,6 +4,10 @@ node_modules/
 # Build output
 dist/
 
+# Packaged store upload artifacts (produced by `npm run package`)
+seniorbrowse-v*.zip
+seniorbrowse-v*.tar.gz
+
 # Local env files
 .env
 .env.local

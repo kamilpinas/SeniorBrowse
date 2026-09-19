@@ -42,12 +42,16 @@ const card: React.CSSProperties = {
   overflow: "hidden",
 }
 
-// Content body that holds the active step's content. Uses flex layout
-// to ensure it never scrolls — all steps fit within available space.
+// Content body that holds the active step's content. Uses flex layout so most
+// steps fit within the available space without scrolling. `overflowY: "auto"`
+// (not "visible") is the safety net: the parent card has `overflow: "hidden"`,
+// so a step taller than the viewport — e.g. the tile-size step at 100% browser
+// zoom — would otherwise be clipped, putting the Next button out of reach. With
+// "auto" the content scrolls internally instead and Next stays accessible.
 const stepScroll: React.CSSProperties = {
   flex: 1,
   minHeight: 0,
-  overflowY: "visible",
+  overflowY: "auto",
   display: "flex",
   flexDirection: "column",
   gap: "1.2rem",

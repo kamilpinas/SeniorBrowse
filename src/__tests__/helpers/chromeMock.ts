@@ -49,6 +49,7 @@ export function createChromeMock() {
         removeListener: vi.fn(),
       },
       sendMessage: vi.fn(async (): Promise<unknown> => undefined),
+      setUninstallURL: vi.fn(async (_url: string) => undefined),
     },
     storage: {
       local,

@@ -3,6 +3,7 @@
 // download blocker, activity logger, and ad blocking.
 
 import { storage } from "@shared/storage"
+import { UNINSTALL_REMINDER_URL } from "@shared/constants"
 import type { Config } from "@shared/types"
 import type { IncomingMessage, MessageResponse } from "@shared/messages"
 import { hostMatches } from "@shared/hostMatch"
@@ -13,6 +14,25 @@ import { getMalwareDomainSet, refreshRemoteList } from "./malwareBlocklist"
 
 const MALWARE_REFRESH_ALARM = "refresh-malware-list"
 const MALWARE_REFRESH_PERIOD_MINUTES = 24 * 60 // once a day
+
+// ── Post-uninstall reminder ──────────────────────────────────────────────────
+// Chrome has no API to block, delay, or gate an extension's own uninstallation.
+// The closest fallback is setUninstallURL, which opens a page right after the
+// user uninstalls. We point it at a branded reminder (check with your caregiver
+// first, plus a one-click reinstall link), personalised with the configured
+// names. Chrome does not persist the uninstall URL across service-worker
+// restarts, so we re-apply it on every wake and whenever the names change.
+async function applyUninstallReminder(config: Config): Promise<void> {
+  try {
+    const url = new URL(UNINSTALL_REMINDER_URL)
+    if (config.seniorName) url.searchParams.set("senior", config.seniorName)
+    if (config.caregiverName) url.searchParams.set("caregiver", config.caregiverName)
+    await chrome.runtime.setUninstallURL(url.toString())
+  } catch (err) {
+    // setUninstallURL is unavailable on some Chromium forks — fail open.
+    console.warn("[SeniorBrowse] setUninstallURL failed:", err)
+  }
+}
 
 // ── Install / update ───────────────────────────────────────────────────────
 
@@ -26,6 +46,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
   const config = await storage.local.get("config")
   await updateAdBlocking(config.security.blockAds)
+  await applyUninstallReminder(config)
 
   // Make the toolbar icon open/close the native side panel.
   // This replaces the old onClicked admin-toggle behaviour.
@@ -56,6 +77,13 @@ refreshRemoteList().catch(console.error)
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === MALWARE_REFRESH_ALARM) refreshRemoteList().catch(console.error)
 })
+
+// Re-apply the uninstall reminder URL on every wake — Chrome drops it when the
+// MV3 service worker is killed, so onInstalled alone isn't enough.
+storage.local
+  .get("config")
+  .then(applyUninstallReminder)
+  .catch(console.error)
 
 // ── Real-time panel state via onClosed / onOpened (Chrome 141+/142+) ─────────
 // These are the authoritative events — they fire for every open/close including
@@ -308,5 +336,16 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   const newConfig = change.newValue as Config | undefined
   if (newConfig?.security?.blockAds !== undefined) {
     await updateAdBlocking(newConfig.security.blockAds)
+  }
+
+  // Keep the personalised uninstall reminder in sync when the names change
+  // (e.g. edited in settings or during onboarding).
+  const oldConfig = change.oldValue as Config | undefined
+  if (
+    newConfig &&
+    (newConfig.seniorName !== oldConfig?.seniorName ||
+      newConfig.caregiverName !== oldConfig?.caregiverName)
+  ) {
+    await applyUninstallReminder(newConfig)
   }
 })
